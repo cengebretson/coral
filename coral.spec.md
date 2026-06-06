@@ -363,11 +363,13 @@ Minimum test coverage before publishing:
 
 ## Future enhancements
 
-- Expand fishtape tests for branch filtering, fallback paths, doctor output, Slack output, and PR response fixtures.
+- Expand fishtape tests for doctor output, Slack output, preview rendering, delete/rebase fallback paths, and GitHub auth failure fixtures.
 - Add a soft refresh vs hard refresh split: soft reload keeps PR cache, hard reload clears and refetches PR metadata.
 - Make label badge colors configurable, either globally or by label name.
 - Consider an optional GraphQL or `gh api` PR lookup backend if branch-scoped `gh pr list --head` becomes too slow in very large local branch sets.
 - Add stale-cache detail to preview output, not just the list badge.
+- Add a README screenshot or short GIF once the UI is stable.
+- Add release/tag guidance for Fisher users once the first public version settles.
 
 ---
 
