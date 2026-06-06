@@ -84,7 +84,6 @@ Hard dependency checks should be available through `coral --doctor` and should a
 | gh (GitHub CLI) | Branch browsing remains available; PR columns show unavailable/auth-needed state; PR open/rebase keybinds show one clean message |
 | gum | Confirms fall back to fzf Yes/No picker |
 | tmux | Delete/rebase/review popups fall back to blocking `execute` / `execute-silent` fzf binds plus reload |
-| curl | fzf list auto-reload after popup actions unavailable; user must press ⌥r manually |
 
 ---
 
@@ -187,7 +186,7 @@ Preferred tools should improve the experience but must not be required for branc
 | Rebase action UI | tmux popup | Blocking fzf execute bind, then reload list |
 | Delete action UI | tmux popup + gum confirmation | Blocking fzf execute bind + fzf Yes/No picker |
 | Confirmation prompts | gum confirm/choose with theme colors | fzf Yes/No picker |
-| Post-action reload | curl-triggered fzf reload where needed | User can press refresh keybind manually |
+| Post-action reload | fzf binding reload after popup actions where needed | User can press refresh keybind manually |
 | Cache refresh | repo-specific cache file via `_coral_clear_cache` | no-op when repo cache cannot be resolved |
 
 When an optional tool is absent, keybinds should either remain useful through a fallback or fail with one concise message. Avoid stack traces, raw command errors, or partially drawn fzf panes.

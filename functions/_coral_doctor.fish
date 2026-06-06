@@ -30,7 +30,7 @@ function _coral_doctor
     end
 
     _coral_doctor_section "Optional enhancements"
-    for optional in gh gum tmux curl
+    for optional in gh gum tmux
         if command -q $optional
             _coral_doctor_ok "$optional available"
         else

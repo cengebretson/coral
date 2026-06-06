@@ -24,12 +24,17 @@ function coral --description "Browse local branches with fzf"
         return 1
     end
 
-    # In tmux: execute-silent + popup keeps fzf visible; reload triggered via --listen.
-    # Outside tmux: execute (blocking) with inline +reload.
-    if test -n "$TMUX"
-        set -f force_bind 'alt-D:execute-silent(_coral_run_delete {1} force $FZF_PORT)'
-        set -f rebase_bind 'alt-e:execute-silent(_coral_run_rebase {1} $FZF_PORT)'
-        set -f extra_flags --listen
+    set -f use_tmux 0
+    if test -n "$TMUX"; and command -q tmux
+        set use_tmux 1
+    end
+
+    # In tmux: execute-silent + popup keeps fzf visible.
+    # Outside tmux: execute (blocking) runs the action inline.
+    if test "$use_tmux" = 1
+        set -f force_bind 'alt-D:execute-silent(_coral_run_delete {1} force)+reload(_coral_list)'
+        set -f rebase_bind 'alt-e:execute-silent(_coral_run_rebase {1})+reload(_coral_list)'
+        set -f extra_flags
     else
         set -f force_bind 'alt-D:execute(_coral_force_delete_branch {1})+reload(_coral_list)'
         set -f rebase_bind 'alt-e:execute(_coral_rebase {1})+reload(_coral_list)'
@@ -81,7 +86,7 @@ function coral --description "Browse local branches with fzf"
 
     set -f wt_path (_coral_worktree_path "$branch")
     if test -n "$wt_path"
-        if test -n "$TMUX"
+        if test "$use_tmux" = 1
             tmux new-window -c "$wt_path"
         else
             echo "coral: branch is already checked out in linked worktree"

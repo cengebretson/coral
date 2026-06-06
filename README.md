@@ -35,7 +35,6 @@ coral --doctor
 | gh | no | Adds GitHub PR enrichment when available and authenticated. |
 | gum | no | Improves confirmation prompts. |
 | tmux | no | Enables popup-friendly branch actions. |
-| curl | no | Used for fzf reloads in tmux mode. |
 
 ## Usage
 
@@ -111,7 +110,7 @@ Cache files live under `$XDG_CACHE_HOME/coral/pr`, with fallback to `~/.cache/co
 
 ## Worktrees
 
-If the selected branch is already checked out in a linked worktree, coral avoids a duplicate checkout. Inside tmux, it opens that worktree in a new tmux window. Outside tmux, it changes the current shell to that worktree path.
+If the selected branch is already checked out in a linked worktree, coral avoids a duplicate checkout. Inside tmux, when the `tmux` command is available, it opens that worktree in a new tmux window. Otherwise, it changes the current shell to that worktree path.
 
 ## Jira
 
