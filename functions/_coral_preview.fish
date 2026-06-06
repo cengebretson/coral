@@ -10,9 +10,12 @@ function _coral_preview --argument-names branch
     echo "  $last"
     set_color normal
 
-    # Fetch PR first — baseRefName is the authoritative base for all comparisons.
-    # Fall back to the inferred upstream only when there is no PR.
-    set -f pr (gh pr view "$branch" --json title,state,url,labels,baseRefName 2>/dev/null)
+    # Fetch PR first on GitHub remotes — baseRefName is the authoritative base for comparisons.
+    # Fall back to the inferred upstream when there is no PR or no GitHub remote.
+    set -f pr
+    if _coral_is_github_repo; and command -q gh
+        set pr (gh pr view "$branch" --json title,state,url,labels,baseRefName 2>/dev/null)
+    end
     set -f pr_ok false
     if test -n "$pr"; and echo $pr | jq -e . >/dev/null 2>&1
         set -f pr_ok true

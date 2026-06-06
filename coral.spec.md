@@ -32,6 +32,8 @@ coral/
 │   ├── _coral_file_mtime.fish
 │   ├── _coral_force_delete_branch.fish
 │   ├── _coral_hash_key.fish
+│   ├── _coral_is_base_branch.fish
+│   ├── _coral_is_github_repo.fish
 │   ├── _coral_jira_pattern.fish
 │   ├── _coral_jira_url.fish
 │   ├── _coral_label_badge.fish
@@ -108,7 +110,7 @@ The config file is optional. If it is missing, coral uses the defaults below. Us
 
 | Setting | Default | Purpose |
 |-----|---------|---------|
-| `CORAL_BASE_BRANCHES` | `develop\|main\|master\|release/\|hotfix/` | ERE alternation for base branch detection in `_coral_upstream`. Override for trunk-based or custom workflows |
+| `CORAL_BASE_BRANCHES` | `develop main master release hotfix trunk staging` | Fish list for base branch detection. Values match exact branch names and `<value>/*` branch families |
 | `CORAL_CACHE_TTL` | `300` | Repo PR cache TTL in seconds. Positive integers only; invalid values fall back to `300` |
 | `CORAL_COLOR_ACCENT` | `#CBA6F7` | gum selected button / regular-delete branch name color |
 | `CORAL_COLOR_BG` | `#1E1E2E` | gum selected button foreground |
@@ -235,6 +237,8 @@ Cache helpers are intentionally separate so list rendering, refresh keybinds, an
 | `_coral_doctor*` | read-only diagnostics for dependencies, config, repo state, cache, and GitHub auth |
 | `_coral_file_mtime` | return cache mtime using BSD `stat -f %m` or GNU `stat -c %Y` |
 | `_coral_hash_key` | derive stable cache/file keys with `git hash-object --stdin` so no extra hash utility is required |
+| `_coral_is_base_branch` | test whether a branch matches the configured base-branch list |
+| `_coral_is_github_repo` | test whether `origin` points at GitHub before enabling PR actions |
 | `_coral_label_badge` | render GitHub label names as ANSI badges for preview |
 | `_coral_jira_url` | resolve a parsed Jira key through `CORAL_JIRA_URL_TEMPLATE` |
 | `_coral_load_config` | source optional config file and install defaults |
@@ -268,7 +272,7 @@ Default PR lookup should be scoped to the local branches coral is displaying:
 - collect local branch names from `_coral_list`
 - include each local branch's current commit SHA in the cache row
 - keep "no PR" cache rows so branches without PRs are not rechecked until their SHA changes or cache TTL expires
-- call `gh pr list --head <branch> --state all --limit 20` for those branch heads
+- call `gh pr list --head <branch> --state all --limit 20` for those branch heads only when `origin` is a GitHub remote
 - run branch lookups in parallel batches capped by `CORAL_PR_BATCH_SIZE`
 - keep open PRs regardless of age
 - keep merged/closed PRs only when `updatedAt` is inside `CORAL_PR_HISTORY_DAYS`
@@ -363,16 +367,14 @@ Minimum test coverage before publishing:
 - Add a soft refresh vs hard refresh split: soft reload keeps PR cache, hard reload clears and refetches PR metadata.
 - Make label badge colors configurable, either globally or by label name.
 - Consider an optional GraphQL or `gh api` PR lookup backend if branch-scoped `gh pr list --head` becomes too slow in very large local branch sets.
-- Add a stale-cache indicator in the list or preview when PR data is older than the configured TTL.
-- Add explicit support for non-GitHub remotes by hiding GitHub-only actions cleanly.
-- Revisit `CORAL_BASE_BRANCHES` as a fish list variable instead of an ERE string.
+- Add stale-cache detail to preview output, not just the list badge.
 
 ---
 
 ## Open questions before publishing
 
 - [x] Ship `completions/coral.fish` for switch completion.
-- [ ] Should `CORAL_BASE_BRANCHES` use a list var (`set -gx CORAL_BASE_BRANCHES develop main`) instead of an ERE string? More fish-idiomatic.
+- [x] `CORAL_BASE_BRANCHES` uses a fish list variable instead of an ERE string.
 - [x] The Jira key pattern is configurable via `CORAL_JIRA_KEY_PATTERN`; default is `[A-Z]+-[0-9]+`.
 - [ ] Test on fish 3.3, 3.4, 3.6 — `set -f` (function-local) was introduced in 3.1; `wait` for background jobs in 3.1. Minimum should be confirmed.
-- [ ] Decide whether to ship a default `CORAL_BASE_BRANCHES` that also matches `trunk` and `staging`.
+- [x] Default `CORAL_BASE_BRANCHES` includes `trunk` and `staging`.

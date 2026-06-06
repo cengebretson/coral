@@ -14,7 +14,17 @@ function _coral_load_config
         end
     end
 
-    set -q CORAL_BASE_BRANCHES; or set -g CORAL_BASE_BRANCHES 'develop|main|master|release/|hotfix/'
+    set -q CORAL_BASE_BRANCHES; or set -g CORAL_BASE_BRANCHES develop main master release hotfix trunk staging
+    if test (count $CORAL_BASE_BRANCHES) -eq 1; and string match -q '*|*' -- "$CORAL_BASE_BRANCHES"
+        set -f base_values
+        for base in (string split '|' -- "$CORAL_BASE_BRANCHES")
+            set -f normalized (string replace -r '/$' '' -- "$base")
+            test -n "$normalized"; and set base_values $base_values $normalized
+        end
+        if test (count $base_values) -gt 0
+            set -g CORAL_BASE_BRANCHES $base_values
+        end
+    end
     set -q CORAL_CACHE_TTL; or set -g CORAL_CACHE_TTL 300
     set -q CORAL_COLOR_ACCENT; or set -g CORAL_COLOR_ACCENT '#CBA6F7'
     set -q CORAL_COLOR_BG; or set -g CORAL_COLOR_BG '#1E1E2E'

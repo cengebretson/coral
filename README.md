@@ -1,4 +1,4 @@
-# coral
+# ≈ ψ coral ψ ≈
 
 Git branch browser for fish shell, built on fzf with GitHub PR status, inline preview, Jira shortcuts, Slack export, and tmux-aware branch actions.
 
@@ -35,6 +35,8 @@ coral --doctor
 | gh | no | Adds GitHub PR enrichment when available and authenticated. |
 | gum | no | Improves confirmation prompts. |
 | tmux | no | Enables popup-friendly branch actions. |
+
+PR actions are enabled only when `origin` is a GitHub remote. In non-GitHub repositories, coral keeps branch browsing, checkout, worktree, delete, and rebase behavior available without calling `gh`.
 
 ## Usage
 
@@ -94,7 +96,7 @@ set -g CORAL_PR_HISTORY_DAYS 30
 
 | Setting | Default | Purpose |
 |---------|---------|---------|
-| `CORAL_BASE_BRANCHES` | `develop\|main\|master\|release/\|hotfix/` | ERE alternation for base branch detection. |
+| `CORAL_BASE_BRANCHES` | `develop main master release hotfix trunk staging` | Fish list for base branch detection. Values match exact branch names and `<value>/*` branch families. |
 | `CORAL_CACHE_TTL` | `300` | Repo PR cache TTL in seconds. |
 | `CORAL_JIRA_KEY_PATTERN` | `[A-Z]+-[0-9]+` | Regex used to parse Jira issue keys from branch names. |
 | `CORAL_JIRA_URL_TEMPLATE` | unset | Jira URL template. Include `{key}`. |

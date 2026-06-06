@@ -1,7 +1,10 @@
 function _coral_rebase --argument-names branch
     # Use the PR target branch if one exists — it's the exact right base.
     # Fall back to the inferred upstream for branches without a PR.
-    set -f pr_base (gh pr view "$branch" --json baseRefName --jq '.baseRefName' 2>/dev/null)
+    set -f pr_base
+    if _coral_is_github_repo; and command -q gh
+        set pr_base (gh pr view "$branch" --json baseRefName --jq '.baseRefName' 2>/dev/null)
+    end
     if test -n "$pr_base"
         set -f upstream "origin/$pr_base"
     else

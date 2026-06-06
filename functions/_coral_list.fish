@@ -6,6 +6,10 @@ function _coral_list
     # Missing origin only disables PR enrichment; branch browsing should still work.
     set -f cache_file (_coral_cache_file)
     set -f cache_ttl (_coral_cache_ttl)
+    set -f github_repo 0
+    if _coral_is_github_repo
+        set github_repo 1
+    end
 
     set -f wt_branches (_coral_worktree_list | awk -F'\t' '{sub("refs/heads/", "", $1); print $1}')
 
@@ -18,7 +22,7 @@ function _coral_list
     set -f branch_data
     for line in $branch_data_all
         set -f _b (string split \t $line)[1]
-        if test "$_b" = "$current"; or test "$_b" != "$base_branch" -a "$_b" != main -a "$_b" != master
+        if test "$_b" = "$current"; or not _coral_is_base_branch "$_b"
             set -f branch_data $branch_data $line
         end
     end
@@ -41,13 +45,16 @@ function _coral_list
     set -f col_width (math $col_width + 2)
 
     set -f pr_entries
+    set -f cache_stale 0
+    set -f cache_age
     if test -n "$cache_file"; and test -f $cache_file
         # Separate stat from math so a missing mtime doesn't produce a bad cache_age
         set -f mtime (_coral_file_mtime "$cache_file")
         if test -n "$mtime"
             set -f cache_age (math (date +%s) - $mtime)
-            if test $cache_age -lt $cache_ttl
-                set -f pr_entries (cat $cache_file)
+            set -f pr_entries (cat $cache_file)
+            if test $cache_age -ge $cache_ttl
+                set cache_stale 1
             end
         end
     end
@@ -88,14 +95,16 @@ function _coral_list
             if test "$cached_parts[2]" = "$sha"
                 set pr_keys $pr_keys $branch
                 set pr_vals $pr_vals $cached_line
-                continue
+                if test "$cache_stale" = 0
+                    continue
+                end
             end
         end
 
         set fetch_pairs $fetch_pairs $branch $sha
     end
 
-    if test (count $fetch_pairs) -gt 0; and test -n "$cache_file"
+    if test (count $fetch_pairs) -gt 0; and test -n "$cache_file"; and test "$github_repo" = 1
         if not command -q gh
             printf 'coral: gh not found — install the GitHub CLI for PR status\n' >&2
         else
@@ -103,12 +112,17 @@ function _coral_list
             if test -n "$fetched_entries"
                 for entry in $fetched_entries
                     set -f fetched_parts (string split \x01 $entry)
-                    set pr_keys $pr_keys $fetched_parts[1]
-                    set pr_vals $pr_vals $entry
+                    if set -f fetched_idx (contains --index -- $fetched_parts[1] $pr_keys)
+                        set pr_vals[$fetched_idx] $entry
+                    else
+                        set pr_keys $pr_keys $fetched_parts[1]
+                        set pr_vals $pr_vals $entry
+                    end
                 end
 
                 set -f cache_tmp $cache_file.tmp
                 printf '%s\n' $pr_vals > $cache_tmp && mv $cache_tmp $cache_file
+                set cache_stale 0
             else
                 printf 'coral: no PR data returned — run gh auth login if not authenticated\n' >&2
             end
@@ -148,6 +162,9 @@ function _coral_list
                 for label in (string split , $pr_labels)
                     set suffix $suffix(printf '  \e[2m[%s]\e[0m' $label)
                 end
+            end
+            if test "$cache_stale" = 1
+                set suffix $suffix(printf '  \e[2m[stale]\e[0m')
             end
         else
             set -f suffix (printf '%s   %s' $wt_marker $age)

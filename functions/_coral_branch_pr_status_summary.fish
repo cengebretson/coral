@@ -1,4 +1,5 @@
 function _coral_branch_pr_status_summary --argument-names branch
+    _coral_is_github_repo; or return 1
     command -q gh; or return 1
 
     set -f pr (gh pr view "$branch" --json state,reviewDecision 2>/dev/null)

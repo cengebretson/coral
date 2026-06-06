@@ -11,12 +11,17 @@ function _coral_upstream --argument-names branch
     # Only consider base-like remote branches active in the last 30 days.
     # -F on grep -v treats the branch name as a literal string, not a regex.
     set -f cutoff (math (date +%s) - 2592000)
-    set -f candidates (git for-each-ref \
+    set -f refs (git for-each-ref \
         --format='%(committerdate:unix) %(refname:short)' \
         refs/remotes/origin/ 2>/dev/null \
-        | awk -v c="$cutoff" '$1 >= c {print $2}' \
-        | grep -E "origin/($CORAL_BASE_BRANCHES)" \
-        | grep -Fv "origin/$branch")
+        | awk -v c="$cutoff" '$1 >= c {print $2}')
+    set -f candidates
+    for ref in $refs
+        set -f remote_branch (string replace 'origin/' '' "$ref")
+        if _coral_is_base_branch "$remote_branch"; and test "$ref" != "origin/$branch"
+            set candidates $candidates $ref
+        end
+    end
 
     set -f best_ref
     set -f best_date 0
