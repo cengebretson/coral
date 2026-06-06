@@ -31,6 +31,7 @@ coral/
 │   ├── _coral_doctor_warn.fish
 │   ├── _coral_file_mtime.fish
 │   ├── _coral_force_delete_branch.fish
+│   ├── _coral_hash_key.fish
 │   ├── _coral_jira_pattern.fish
 │   ├── _coral_jira_url.fish
 │   ├── _coral_label_badge.fish
@@ -42,6 +43,8 @@ coral/
 │   ├── _coral_pr_batch_size.fish
 │   ├── _coral_pr_entries.fish
 │   ├── _coral_pr_history_days.fish
+│   ├── _coral_pr_status_display.fish
+│   ├── _coral_pr_status_summary.fish
 │   ├── _coral_preview.fish
 │   ├── _coral_rebase.fish
 │   ├── _coral_run_delete.fish
@@ -83,7 +86,7 @@ Hard dependency checks should be available through `coral --doctor` and should a
 |------|-------------|
 | gh (GitHub CLI) | Branch browsing remains available; PR columns show unavailable/auth-needed state; PR open/rebase keybinds show one clean message |
 | gum | Confirms fall back to fzf Yes/No picker |
-| tmux | Delete/rebase/review popups fall back to blocking `execute` / `execute-silent` fzf binds plus reload |
+| tmux | Delete/rebase popups and worktree windows fall back to blocking fzf actions or direct `cd` behavior |
 
 ---
 
@@ -183,8 +186,8 @@ Preferred tools should improve the experience but must not be required for branc
 | PR status columns | `gh` authenticated to the current repo host | Blank or muted unavailable column; branch list still works |
 | Open PR in browser | `gh pr view --web` | Show a clean "gh unavailable" message |
 | Open Jira issue | `CORAL_JIRA_URL_TEMPLATE` + Jira key parsed from branch | Show a clean "CORAL_JIRA_URL_TEMPLATE is not set" message |
-| Rebase action UI | tmux popup | Blocking fzf execute bind, then reload list |
-| Delete action UI | tmux popup + gum confirmation | Blocking fzf execute bind + fzf Yes/No picker |
+| Rebase action UI | tmux popup when `$TMUX` is set and `tmux` is available | Blocking fzf execute bind, then reload list |
+| Delete action UI | tmux popup + gum confirmation when `$TMUX` is set and `tmux` is available | Blocking fzf execute bind + fzf Yes/No picker |
 | Confirmation prompts | gum confirm/choose with theme colors | fzf Yes/No picker |
 | Post-action reload | fzf binding reload after popup actions where needed | User can press refresh keybind manually |
 | Cache refresh | repo-specific cache file via `_coral_clear_cache` | no-op when repo cache cannot be resolved |
@@ -197,7 +200,7 @@ When an optional tool is absent, keybinds should either remain useful through a 
 
 | Key | Action | Notes |
 |-----|--------|-------|
-| `Enter` | Checkout selected branch | If the branch is checked out in a linked worktree, open that worktree in a tmux window when tmux is available |
+| `Enter` | Checkout selected branch | If the branch is checked out in a linked worktree, open that worktree in a tmux window when tmux is available; otherwise `cd` to that worktree |
 | `Ctrl-o` | Open GitHub PR | Uses `_coral_open_pr`; shows a clean message if `gh` is unavailable or no PR exists |
 | `Ctrl-j` | Open Jira issue | Always visible. Requires `CORAL_JIRA_URL_TEMPLATE` and a Jira key parsed from the branch name |
 | `Ctrl-p` | Toggle preview | Preview includes PR info, Jira URL, worktree path, commits ahead, and changed files |
@@ -231,12 +234,14 @@ Cache helpers are intentionally separate so list rendering, refresh keybinds, an
 | `_coral_delete_common` | shared regular/force branch deletion flow |
 | `_coral_doctor*` | read-only diagnostics for dependencies, config, repo state, cache, and GitHub auth |
 | `_coral_file_mtime` | return cache mtime using BSD `stat -f %m` or GNU `stat -c %Y` |
+| `_coral_hash_key` | derive stable cache/file keys with `git hash-object --stdin` so no extra hash utility is required |
 | `_coral_label_badge` | render GitHub label names as ANSI badges for preview |
 | `_coral_jira_url` | resolve a parsed Jira key through `CORAL_JIRA_URL_TEMPLATE` |
 | `_coral_load_config` | source optional config file and install defaults |
 | `_coral_open_jira` | open parsed Jira key URL |
 | `_coral_open_pr` | open selected branch's PR through `gh` |
-| `_coral_popup` | tmux popup wrapper plus optional fzf reload |
+| `_coral_popup` | tmux popup wrapper for delete/rebase actions |
+| `_coral_pr_status_display` / `_coral_pr_status_summary` | render PR status markers for list and preview output |
 | `_coral_pr_batch_size` | parse `CORAL_PR_BATCH_SIZE`, defaulting invalid values to `10` |
 | `_coral_pr_entries` | batch-fetch PR metadata for stale local branch heads and emit branch/SHA cache rows |
 | `_coral_pr_history_days` | parse `CORAL_PR_HISTORY_DAYS`, defaulting invalid values to `30` |
@@ -288,22 +293,28 @@ Base branches such as `develop`, `main`, and `master` are hidden by default to k
 
 Use [fishtape](https://github.com/jorgebucaran/fishtape) as the default test runner. It is a pure-fish TAP test runner, which fits a Fisher plugin better than Bats or shellspec because the code under test is fish-native.
 
-Suggested layout:
+Repo layout:
 
 ```text
-~/.config/coral/
+coral/
 ├── tests/
 │   ├── helpers.fish
 │   ├── cache.test.fish
+│   ├── completions.test.fish
 │   ├── config.test.fish
+│   ├── dependencies.test.fish
+│   ├── fisher-layout.test.fish
+│   ├── status-display.test.fish
+│   ├── status-summary.test.fish
 │   ├── validation.test.fish
-│   └── version.test.fish
+│   ├── version.test.fish
+│   └── worktree.test.fish
 ```
 
 Run with:
 
 ```fish
-fishtape ~/.config/coral/tests/*.test.fish
+fishtape tests/*.test.fish
 ```
 
 Minimum test coverage before publishing:
@@ -329,7 +340,7 @@ Minimum test coverage before publishing:
 - `coral --slack [filter ...]` outputs only open local-branch PRs with Slack `<url|title>` links; filters match branch, title, and labels
 - refresh removes only the current repo's cache
 - no remote, no upstream, detached HEAD, and non-Git directory behavior
-- branch checked out in another worktree is detected and protected
+- branch checked out in another worktree is detected and routes to that worktree instead of forcing a duplicate checkout
 
 ---
 
@@ -348,7 +359,6 @@ Minimum test coverage before publishing:
 
 ## Future enhancements
 
-- Add `completions/coral.fish` for switches/subcommands such as `--doctor`, `clear-cache`, and `version`.
 - Expand fishtape tests for branch filtering, fallback paths, doctor output, Slack output, and PR response fixtures.
 - Add a soft refresh vs hard refresh split: soft reload keeps PR cache, hard reload clears and refetches PR metadata.
 - Make label badge colors configurable, either globally or by label name.
