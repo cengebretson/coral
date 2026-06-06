@@ -84,7 +84,9 @@ function coral --description "Browse local branches with fzf"
         if test -n "$TMUX"
             tmux new-window -c "$wt_path"
         else
-            echo "Worktree: $wt_path"
+            echo "coral: branch is already checked out in linked worktree"
+            cd "$wt_path"
+            and pwd
         end
     else
         git checkout "$branch"

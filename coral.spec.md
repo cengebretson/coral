@@ -72,7 +72,6 @@ coral/
 | fzf | 0.57+ | `fzf --version` | brew install fzf |
 | fzf.fish (PatrickF1) | any | `functions -q _fzf_wrapper` | fisher install PatrickF1/fzf.fish |
 | jq | any | `command -q jq` | brew install jq |
-| shasum | any | `command -q shasum` | ships with macOS/Linux |
 
 **fzf ≥ 0.57** is required for `--input-border` and `--list-border` flags. Older versions will fail silently with layout errors.
 

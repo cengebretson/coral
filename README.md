@@ -32,7 +32,6 @@ coral --doctor
 | fzf 0.57+ | yes | Coral uses modern fzf border flags. |
 | fzf.fish | yes | Provides `_fzf_wrapper`. |
 | jq | yes | Parses GitHub PR data. |
-| shasum | yes | Builds stable repo cache keys. |
 | gh | no | Adds GitHub PR enrichment when available and authenticated. |
 | gum | no | Improves confirmation prompts. |
 | tmux | no | Enables popup-friendly branch actions. |
@@ -64,7 +63,7 @@ Utility commands:
 
 | Key | Action |
 |-----|--------|
-| `Enter` | Checkout the selected branch. |
+| `Enter` | Checkout the selected branch, or go to its linked worktree when already checked out elsewhere. |
 | `Ctrl-o` | Open the selected branch's GitHub PR. |
 | `Ctrl-j` | Open the Jira issue parsed from the branch name. |
 | `Ctrl-p` | Toggle the preview pane. |
@@ -112,7 +111,7 @@ Cache files live under `$XDG_CACHE_HOME/coral/pr`, with fallback to `~/.cache/co
 
 ## Worktrees
 
-If the selected branch is already checked out in a linked worktree, coral opens that worktree in a new tmux window when tmux is available. Outside tmux, it prints the worktree path instead of forcing a checkout.
+If the selected branch is already checked out in a linked worktree, coral avoids a duplicate checkout. Inside tmux, it opens that worktree in a new tmux window. Outside tmux, it changes the current shell to that worktree path.
 
 ## Jira
 

@@ -5,7 +5,7 @@ function _coral_worktree_list
         | awk '
             /^worktree / { n++; path = substr($0, 10); branch = "" }
             /^branch /   { branch = $2 }
-            /^$/         { if (n > 1 && branch != "") print branch "\t" path }
+            /^$/         { if (n > 1 && branch != "") print branch "\t" path; branch = ""; path = "" }
             END          { if (n > 1 && branch != "") print branch "\t" path }
         '
 end

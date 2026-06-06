@@ -17,7 +17,7 @@ function _coral_pr_entries
         set -e argv[1]
         set -e argv[1]
 
-        set -f branch_key (printf '%s' "$branch" | shasum -a 256 2>/dev/null | string sub -l 16)
+        set -f branch_key (_coral_hash_key "$branch")
         test -n "$branch_key"; or continue
         printf '%s\n' "$branch" > "$tmp_dir/$branch_key.branch"
         printf '%s\n' "$sha" > "$tmp_dir/$branch_key.sha"

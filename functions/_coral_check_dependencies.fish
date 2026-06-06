@@ -1,7 +1,7 @@
 function _coral_check_dependencies --description "Validate coral hard dependencies"
     set -f failures 0
 
-    for required in git fzf jq shasum
+    for required in git fzf jq
         if not command -q $required
             echo "coral: $required not found." >&2
             set failures (math $failures + 1)

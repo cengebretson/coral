@@ -14,7 +14,6 @@ function _coral_doctor
         set failures (math $failures + 1)
     end
     _coral_doctor_command jq; or set failures (math $failures + 1)
-    _coral_doctor_command shasum; or set failures (math $failures + 1)
 
     if command -q fzf
         set -f fzf_ver (fzf --version 2>/dev/null | string match -r '\d+\.\d+' | head -1)
