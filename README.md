@@ -132,8 +132,8 @@ Syntax-check the plugin:
 fish -n functions/*.fish conf.d/*.fish completions/*.fish
 ```
 
-Run the local fishtape suite when available:
+Run the fishtape suite:
 
 ```fish
-fishtape ~/.config/coral/tests/*.test.fish
+fishtape tests/*.test.fish
 ```
