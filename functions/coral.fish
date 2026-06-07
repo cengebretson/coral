@@ -70,7 +70,7 @@ function coral --description "Browse local branches with fzf"
             --bind 'ctrl-o:execute(_coral_open_pr {1})' \
             $jira_flags \
             --bind $force_bind \
-            --bind 'alt-r:execute(_coral_clear_cache)+reload(_coral_list)' \
+            --bind 'alt-r:execute(_coral_refresh)+reload(_coral_list)' \
             --bind $rebase_bind \
             --prompt="Branch> " \
             --preview='_coral_preview {1}' \

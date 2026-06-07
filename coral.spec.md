@@ -192,7 +192,7 @@ Preferred tools should improve the experience but must not be required for branc
 | Delete action UI | tmux popup + gum confirmation when `$TMUX` is set and `tmux` is available | Blocking fzf execute bind + fzf Yes/No picker |
 | Confirmation prompts | gum confirm/choose with theme colors | fzf Yes/No picker |
 | Post-action reload | fzf binding reload after popup actions where needed | User can press refresh keybind manually |
-| Cache refresh | repo-specific cache file via `_coral_clear_cache` | no-op when repo cache cannot be resolved |
+| Cache refresh | repo-specific cache file via `_coral_refresh`; stale worktree metadata pruned best-effort | no-op when repo cache cannot be resolved |
 
 When an optional tool is absent, keybinds should either remain useful through a fallback or fail with one concise message. Avoid stack traces, raw command errors, or partially drawn fzf panes.
 
@@ -208,7 +208,7 @@ When an optional tool is absent, keybinds should either remain useful through a 
 | `Ctrl-p` | Toggle preview | Preview includes PR info, Jira URL, worktree path, commits ahead, and changed files |
 | `Alt-e` | Rebase branch | Uses PR base when available, otherwise inferred upstream |
 | `Alt-D` | Delete selected branch | Header says `delete`; force-delete wording is shown only inside the confirmation popup |
-| `Alt-r` | Refresh | Clears only the current repo's PR cache and reloads the list |
+| `Alt-r` | Refresh | Clears only the current repo's PR cache, prunes stale worktree metadata, and reloads the list |
 
 Subcommands:
 
@@ -231,6 +231,7 @@ Cache helpers are intentionally separate so list rendering, refresh keybinds, an
 | `_coral_cache_file` | resolve the current repo's PR cache path from `origin` URL hash |
 | `_coral_cache_ttl` | parse `CORAL_CACHE_TTL`, defaulting invalid values to `300` |
 | `_coral_clear_cache` | remove only the current repo's cache file |
+| `_coral_refresh` | clear the PR cache and run `git worktree prune` best-effort before list reload |
 | `_coral_config_file` | resolve the XDG config file path |
 | `_coral_confirm` | confirmation UI, using gum when present and fzf fallback otherwise |
 | `_coral_delete_common` | shared regular/force branch deletion flow |

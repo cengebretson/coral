@@ -70,7 +70,7 @@ Utility commands:
 | `Ctrl-p` | Toggle the preview pane. |
 | `Alt-e` | Rebase the selected branch. |
 | `Alt-D` | Delete the selected branch after confirmation. |
-| `Alt-r` | Clear this repo's PR cache and refresh the list. |
+| `Alt-r` | Clear this repo's PR cache, prune stale worktree metadata, and refresh the list. |
 
 ## Configuration
 
