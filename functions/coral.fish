@@ -77,6 +77,8 @@ function coral --description "Browse local branches with fzf"
             --border=none \
             --input-border=none \
             --list-border=none \
+            --header-border=line \
+            --header-label=' Help ' \
             --info=inline-right \
             --delimiter='\t' \
             --with-nth=2 \
