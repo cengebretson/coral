@@ -10,11 +10,11 @@ function _coral_delete_common --argument-names branch force
 
     set -f pr_status (_coral_branch_pr_status_summary "$branch")
     if test -n "$pr_status"
-        set -f delete_prompt "Delete this branch? $pr_status"
-        set -f force_prompt "Force delete this branch? $pr_status"
+        set -f delete_prompt "Delete this local branch? $pr_status"
+        set -f force_prompt "Force delete this local branch? $pr_status"
     else
-        set -f delete_prompt "Delete this branch?"
-        set -f force_prompt "Force delete this branch?"
+        set -f delete_prompt "Delete this local branch?"
+        set -f force_prompt "Force delete this local branch?"
     end
 
     if test "$force" = force
@@ -37,7 +37,7 @@ function _coral_delete_common --argument-names branch force
         end
         if _coral_confirm "$delete_prompt"
             if not git branch -d "$branch" 2>&1
-                printf 'Not fully merged — use ⌥D to force delete.\n'
+                printf 'Not fully merged — use ⌥d to force delete.\n'
                 sleep 2
             end
         end

@@ -45,11 +45,11 @@ function coral --description "Browse local branches with fzf"
     # In tmux: execute-silent + popup keeps fzf visible.
     # Outside tmux: execute (blocking) runs the action inline.
     if test "$use_tmux" = 1
-        set -f force_bind "alt-D:execute-silent(_coral_run_delete {1} force)+reload(_coral_list $list_mode)"
+        set -f force_bind "alt-d:execute-silent(_coral_run_delete {1} force)+reload(_coral_list $list_mode)"
         set -f rebase_bind "alt-e:execute-silent(_coral_run_rebase {1})+reload(_coral_list $list_mode)"
         set -f extra_flags
     else
-        set -f force_bind "alt-D:execute(_coral_force_delete_branch {1})+reload(_coral_list $list_mode)"
+        set -f force_bind "alt-d:execute(_coral_force_delete_branch {1})+reload(_coral_list $list_mode)"
         set -f rebase_bind "alt-e:execute(_coral_rebase {1})+reload(_coral_list $list_mode)"
         set -f extra_flags
     end
@@ -63,19 +63,37 @@ function coral --description "Browse local branches with fzf"
     set -f help_toggle '?:toggle-header'
     set -f ctrl_key_label (_coral_modifier_key_label ctrl)
     set -f alt_key_label (_coral_modifier_key_label alt)
+    if test "$ctrl_key_label" = "⌃"
+        set -f pr_key '⌃o'
+        set -f jira_key '⌃j'
+        set -f preview_key '⌃p'
+    else
+        set -f pr_key "$ctrl_key_label-o"
+        set -f jira_key "$ctrl_key_label-j"
+        set -f preview_key "$ctrl_key_label-p"
+    end
+    if test "$alt_key_label" = "⌥"
+        set -f rebase_key '⌥e'
+        set -f delete_key '⌥d'
+        set -f refresh_key '⌥r'
+    else
+        set -f rebase_key "$alt_key_label-e"
+        set -f delete_key "$alt_key_label-d"
+        set -f refresh_key "$alt_key_label-r"
+    end
 
     set -f jira_flags --bind 'ctrl-j:execute(_coral_open_jira {1})'
     set -f header_lines \
-        "checkout  Enter   checkout branch or open linked worktree" \
-        "pr        $ctrl_key_label-o  open GitHub PR"
+        (_coral_help_line checkout Enter "checkout branch or open linked worktree") \
+        (_coral_help_line pr "$pr_key" "open GitHub PR")
     if set -q CORAL_JIRA_URL_TEMPLATE; and test -n "$CORAL_JIRA_URL_TEMPLATE"
-        set header_lines $header_lines "jira      $ctrl_key_label-j  open Jira issue from branch name"
+        set header_lines $header_lines (_coral_help_line jira "$jira_key" "open Jira issue from branch name")
     end
     set header_lines $header_lines \
-        "preview   $ctrl_key_label-p  toggle preview pane" \
-        "rebase    $alt_key_label-e   rebase selected branch" \
-        "delete    $alt_key_label-D   delete selected branch" \
-        "refresh   $alt_key_label-r   clear cache, prune worktrees, reload"
+        (_coral_help_line preview "$preview_key" "toggle preview pane") \
+        (_coral_help_line rebase "$rebase_key" "rebase selected branch") \
+        (_coral_help_line delete "$delete_key" "delete local branch") \
+        (_coral_help_line refresh "$refresh_key" "clear cache, prune worktrees, reload")
     set -f header (string join \n $header_lines | string collect)
 
     # Strip input-border and list-border from global FZF_DEFAULT_OPTS — coral owns its layout.

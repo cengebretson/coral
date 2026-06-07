@@ -37,3 +37,4 @@ set -g CORAL_LIST_MODE compact
 
 @test "ctrl key label is available" -n (_coral_modifier_key_label ctrl)
 @test "alt key label is available" -n (_coral_modifier_key_label alt)
+@test "help line pads columns" (_coral_help_line pr '⌃o' 'open GitHub PR') = "pr        ⌃o      open GitHub PR"

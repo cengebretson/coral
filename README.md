@@ -72,7 +72,7 @@ Utility commands:
 | `Ctrl-j` | Open the Jira issue parsed from the branch name. |
 | `Ctrl-p` | Toggle the preview pane. |
 | `Alt-e` | Rebase the selected branch. |
-| `Alt-D` | Delete the selected branch after confirmation. |
+| `Alt-d` | Delete the selected local branch after confirmation. |
 | `Alt-r` | Clear this repo's PR cache, prune stale worktree metadata, and refresh the list. |
 
 ## Tips

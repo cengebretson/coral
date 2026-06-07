@@ -209,7 +209,7 @@ When an optional tool is absent, keybinds should either remain useful through a 
 | `Ctrl-j` | Open Jira issue | Always visible. Requires `CORAL_JIRA_URL_TEMPLATE` and a Jira key parsed from the branch name |
 | `Ctrl-p` | Toggle preview | Preview includes PR info, Jira URL, worktree path, commits ahead, and changed files |
 | `Alt-e` | Rebase branch | Uses PR base when available, otherwise inferred upstream |
-| `Alt-D` | Delete selected branch | Header says `delete`; force-delete wording is shown only inside the confirmation popup |
+| `Alt-d` | Delete selected local branch | Header says `delete`; force-delete wording is shown only inside the confirmation popup |
 | `Alt-r` | Refresh | Clears only the current repo's PR cache, prunes stale worktree metadata, and reloads the list |
 
 Subcommands:
