@@ -61,17 +61,18 @@ function coral --description "Browse local branches with fzf"
 
     set -f preview_toggle 'ctrl-p:toggle-preview'
     set -f help_toggle '?:toggle-header'
-    set -f alt_key_label (_coral_alt_key_label)
+    set -f ctrl_key_label (_coral_modifier_key_label ctrl)
+    set -f alt_key_label (_coral_modifier_key_label alt)
 
     set -f jira_flags --bind 'ctrl-j:execute(_coral_open_jira {1})'
     set -f header_lines \
         "checkout  Enter   checkout branch or open linked worktree" \
-        "pr        Ctrl-o  open GitHub PR"
+        "pr        $ctrl_key_label-o  open GitHub PR"
     if set -q CORAL_JIRA_URL_TEMPLATE; and test -n "$CORAL_JIRA_URL_TEMPLATE"
-        set header_lines $header_lines "jira      Ctrl-j  open Jira issue from branch name"
+        set header_lines $header_lines "jira      $ctrl_key_label-j  open Jira issue from branch name"
     end
     set header_lines $header_lines \
-        "preview   Ctrl-p  toggle preview pane" \
+        "preview   $ctrl_key_label-p  toggle preview pane" \
         "rebase    $alt_key_label-e   rebase selected branch" \
         "delete    $alt_key_label-D   delete selected branch" \
         "refresh   $alt_key_label-r   clear cache, prune worktrees, reload"

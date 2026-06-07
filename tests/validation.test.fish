@@ -35,4 +35,5 @@ coral_test_reset
 set -g CORAL_LIST_MODE compact
 @test "invalid list mode falls back to full" (_coral_list_mode) = full
 
-@test "alt key label is available" -n (_coral_alt_key_label)
+@test "ctrl key label is available" -n (_coral_modifier_key_label ctrl)
+@test "alt key label is available" -n (_coral_modifier_key_label alt)
