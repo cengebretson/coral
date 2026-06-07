@@ -74,6 +74,15 @@ Utility commands:
 | `Alt-D` | Delete the selected branch after confirmation. |
 | `Alt-r` | Clear this repo's PR cache, prune stale worktree metadata, and refresh the list. |
 
+## Tips
+
+- Use fzf inverse matching to hide tags or text. Type `!ready` to show rows that do not match `ready`, which is useful for finding PRs not ready for review.
+- Combine fzf terms to narrow results. For example, `FLYWL !ready` shows rows matching `FLYWL` that do not match `ready`.
+- Use `coral --short` when you want a quieter branch picker with just branch names and PR status.
+- Use `coral --full` when filtering by labels or age, since full mode renders tags, stale markers, and ahead/behind counts into the searchable list.
+- Press `Alt-r` after rebases or worktree cleanup. It clears Coral's PR cache, prunes stale worktree metadata, and reloads the list.
+- Set `CORAL_LIST_MODE short` in `~/.config/coral/config.fish` if you usually prefer the compact view.
+
 ## Configuration
 
 Coral reads optional native fish config from:
