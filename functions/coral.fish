@@ -61,9 +61,21 @@ function coral --description "Browse local branches with fzf"
 
     set -f preview_toggle 'ctrl-p:toggle-preview'
     set -f help_toggle '?:toggle-header'
+    set -f alt_key_label (_coral_alt_key_label)
 
     set -f jira_flags --bind 'ctrl-j:execute(_coral_open_jira {1})'
-    set -f header "checkout(↵) | PR(⌃o) | Jira(⌃j) | preview(⌃p) | rebase(⌥e) | delete(⌥D) | refresh(⌥r)"
+    set -f header_lines \
+        "checkout  Enter   checkout branch or open linked worktree" \
+        "pr        Ctrl-o  open GitHub PR"
+    if set -q CORAL_JIRA_URL_TEMPLATE; and test -n "$CORAL_JIRA_URL_TEMPLATE"
+        set header_lines $header_lines "jira      Ctrl-j  open Jira issue from branch name"
+    end
+    set header_lines $header_lines \
+        "preview   Ctrl-p  toggle preview pane" \
+        "rebase    $alt_key_label-e   rebase selected branch" \
+        "delete    $alt_key_label-D   delete selected branch" \
+        "refresh   $alt_key_label-r   clear cache, prune worktrees, reload"
+    set -f header (string join \n $header_lines | string collect)
 
     # Strip input-border and list-border from global FZF_DEFAULT_OPTS — coral owns its layout.
     set -lx FZF_DEFAULT_OPTS (string replace --regex --all -- '--(?:input|list)-border\S*' '' "$FZF_DEFAULT_OPTS")
