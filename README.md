@@ -66,6 +66,7 @@ Utility commands:
 
 | Key | Action |
 |-----|--------|
+| `?` | Toggle the help/keybinding header. |
 | `Enter` | Checkout the selected branch, or go to its linked worktree when already checked out elsewhere. |
 | `Ctrl-o` | Open the selected branch's GitHub PR. |
 | `Ctrl-j` | Open the Jira issue parsed from the branch name. |

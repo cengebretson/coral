@@ -60,6 +60,7 @@ function coral --description "Browse local branches with fzf"
     end
 
     set -f preview_toggle 'ctrl-p:toggle-preview'
+    set -f help_toggle '?:toggle-header'
 
     set -f jira_flags --bind 'ctrl-j:execute(_coral_open_jira {1})'
     set -f header "checkout(↵) | PR(⌃o) | Jira(⌃j) | preview(⌃p) | rebase(⌥e) | delete(⌥D) | refresh(⌥r)"
@@ -79,13 +80,15 @@ function coral --description "Browse local branches with fzf"
             --info=inline-right \
             --delimiter='\t' \
             --with-nth=2 \
+            --bind 'start:hide-header' \
             --bind $preview_toggle \
+            --bind $help_toggle \
             --bind 'ctrl-o:execute(_coral_open_pr {1})' \
             $jira_flags \
             --bind $force_bind \
             --bind "alt-r:execute(_coral_refresh)+reload(_coral_list $list_mode)" \
             --bind $rebase_bind \
-            --prompt="Branch> " \
+            --prompt="Branch (? help)> " \
             --preview='_coral_preview {1}' \
             --preview-window='right:55%:wrap:border-left' \
             --header=$header
