@@ -1,3 +1,3 @@
 function _coral_version
-    printf '0.1.0\n'
+    printf '0.2.0\n'
 end

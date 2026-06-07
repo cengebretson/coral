@@ -23,3 +23,14 @@ set -g CORAL_PR_HISTORY_DAYS bad
 coral_test_reset
 set -g CORAL_PR_HISTORY_DAYS 0
 @test "PR history days accepts zero" (_coral_pr_history_days) = 0
+
+coral_test_reset
+@test "default list mode is full" (_coral_list_mode) = full
+
+coral_test_reset
+set -g CORAL_LIST_MODE short
+@test "short list mode is accepted" (_coral_list_mode) = short
+
+coral_test_reset
+set -g CORAL_LIST_MODE compact
+@test "invalid list mode falls back to full" (_coral_list_mode) = full

@@ -119,6 +119,7 @@ The config file is optional. If it is missing, coral uses the defaults below. Us
 | `CORAL_COLOR_TEXT` | `#CDD6F4` | gum prompt text color |
 | `CORAL_JIRA_KEY_PATTERN` | `[A-Z]+-[0-9]+` | Regex used to extract a Jira issue key from the selected branch |
 | `CORAL_JIRA_URL_TEMPLATE` | _(unset)_ | URL template for Jira issues. Use `{key}` as the issue-key placeholder, e.g. `https://yourorg.atlassian.net/browse/{key}` |
+| `CORAL_LIST_MODE` | `full` | Branch list density. `full` shows PR status, commit age, labels, cache stale marker, and ahead/behind counts; `short` shows branch name plus PR status |
 | `CORAL_PR_BATCH_SIZE` | `10` | Max concurrent branch-scoped `gh pr list --head` lookups during cache refresh. Positive integers only; invalid values fall back to `10` |
 | `CORAL_PR_HISTORY_DAYS` | `30` | How far back to include merged/closed PRs by `updatedAt`. Set `0` to show open PRs only; invalid values fall back to `30` |
 
@@ -126,6 +127,7 @@ Example config:
 
 ```fish
 set -g CORAL_JIRA_URL_TEMPLATE 'https://yourorg.atlassian.net/browse/{key}'
+set -g CORAL_LIST_MODE full
 set -g CORAL_PR_BATCH_SIZE 10
 set -g CORAL_PR_HISTORY_DAYS 30
 ```
@@ -215,7 +217,9 @@ Subcommands:
 | Command | Action |
 |---------|--------|
 | `coral --doctor` | Print dependency, configuration, repo, cache, and GitHub auth diagnostics |
+| `coral --full [filter]` | Use the full branch list view for this run, overriding `CORAL_LIST_MODE` |
 | `coral --slack [filter ...]` | Print open local-branch PRs as Slack-friendly links, optionally filtered by branch/title/label terms |
+| `coral --short [filter]` | Use the short branch list view for this run, overriding `CORAL_LIST_MODE` |
 | `coral --version` | Print the coral version |
 
 ---
@@ -242,6 +246,7 @@ Cache helpers are intentionally separate so list rendering, refresh keybinds, an
 | `_coral_is_github_repo` | test whether `origin` points at GitHub before enabling PR actions |
 | `_coral_label_badge` | render GitHub label names as ANSI badges for preview |
 | `_coral_jira_url` | resolve a parsed Jira key through `CORAL_JIRA_URL_TEMPLATE` |
+| `_coral_list_mode` | parse `CORAL_LIST_MODE`, defaulting invalid values to `full` |
 | `_coral_load_config` | source optional config file and install defaults |
 | `_coral_open_jira` | open parsed Jira key URL |
 | `_coral_open_pr` | open selected branch's PR through `gh` |
@@ -334,6 +339,7 @@ Minimum test coverage before publishing:
 - confirmation falls back from gum to fzf
 - delete/rebase actions fall back when tmux is absent
 - `CORAL_CACHE_TTL` accepts positive integers and rejects invalid values
+- `CORAL_LIST_MODE` defaults to `full`, accepts `full` and `short`, and rejects invalid values
 - `CORAL_PR_BATCH_SIZE` defaults to 10 and rejects invalid values
 - `CORAL_PR_HISTORY_DAYS` defaults to 30, accepts 0, and rejects invalid values
 - open PRs are not dropped in repos with more than 200 recent all-state PRs

@@ -57,6 +57,7 @@ function _coral_doctor
     end
 
     _coral_doctor_value CORAL_CACHE_TTL (_coral_cache_ttl)
+    _coral_doctor_value CORAL_LIST_MODE (_coral_list_mode)
     _coral_doctor_value CORAL_PR_BATCH_SIZE (_coral_pr_batch_size)
     _coral_doctor_value CORAL_PR_HISTORY_DAYS (_coral_pr_history_days)
     _coral_doctor_ok "cache dir: "(_coral_cache_dir)

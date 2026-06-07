@@ -34,6 +34,16 @@ end
 @test "branch list hides trunk by default" (contains -- trunk $branch_names; echo $status) = 1
 @test "branch list hides staging by default" (contains -- staging $branch_names; echo $status) = 1
 
+set sep (printf '\x01')
+set feature_sha (git rev-parse feature/list)
+set cache_file (_coral_cache_file)
+printf '%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n' feature/list "$sep" "$feature_sha" "$sep" OPEN "$sep" APPROVED "$sep" ready "$sep" "Ready PR" "$sep" main "$sep" https://github.com/example/repo/pull/1 > "$cache_file"
+set full_output (_coral_list full 2>/dev/null)
+set short_output (_coral_list short 2>/dev/null)
+@test "full list includes PR labels" (string match -q "*[ready]*" "$full_output"; echo $status) = 0
+@test "short list keeps PR status" (string match -q "*✓*" "$short_output"; echo $status) = 0
+@test "short list hides PR labels" (string match -q "*[ready]*" "$short_output"; echo $status) = 1
+
 git checkout -q trunk
 set trunk_output (_coral_list 2>/dev/null)
 set trunk_branch_names

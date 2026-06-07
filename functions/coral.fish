@@ -15,6 +15,19 @@ function coral --description "Browse local branches with fzf"
         end
     end
 
+    set -f list_mode (_coral_list_mode)
+    set -f query_terms
+    for arg in $argv
+        switch $arg
+            case --short
+                set list_mode short
+            case --full
+                set list_mode full
+            case '*'
+                set query_terms $query_terms $arg
+        end
+    end
+
     if not _coral_check_dependencies
         return 1
     end
@@ -32,18 +45,18 @@ function coral --description "Browse local branches with fzf"
     # In tmux: execute-silent + popup keeps fzf visible.
     # Outside tmux: execute (blocking) runs the action inline.
     if test "$use_tmux" = 1
-        set -f force_bind 'alt-D:execute-silent(_coral_run_delete {1} force)+reload(_coral_list)'
-        set -f rebase_bind 'alt-e:execute-silent(_coral_run_rebase {1})+reload(_coral_list)'
+        set -f force_bind "alt-D:execute-silent(_coral_run_delete {1} force)+reload(_coral_list $list_mode)"
+        set -f rebase_bind "alt-e:execute-silent(_coral_run_rebase {1})+reload(_coral_list $list_mode)"
         set -f extra_flags
     else
-        set -f force_bind 'alt-D:execute(_coral_force_delete_branch {1})+reload(_coral_list)'
-        set -f rebase_bind 'alt-e:execute(_coral_rebase {1})+reload(_coral_list)'
+        set -f force_bind "alt-D:execute(_coral_force_delete_branch {1})+reload(_coral_list $list_mode)"
+        set -f rebase_bind "alt-e:execute(_coral_rebase {1})+reload(_coral_list $list_mode)"
         set -f extra_flags
     end
 
     set -f query_flags
-    if test (count $argv) -gt 0
-        set -f query_flags --query $argv[1]
+    if test (count $query_terms) -gt 0
+        set -f query_flags --query (string join ' ' $query_terms)
     end
 
     set -f preview_toggle 'ctrl-p:toggle-preview'
@@ -54,7 +67,7 @@ function coral --description "Browse local branches with fzf"
     # Strip input-border and list-border from global FZF_DEFAULT_OPTS — coral owns its layout.
     set -lx FZF_DEFAULT_OPTS (string replace --regex --all -- '--(?:input|list)-border\S*' '' "$FZF_DEFAULT_OPTS")
 
-    set -f result (_coral_list \
+    set -f result (_coral_list $list_mode \
         | _fzf_wrapper \
             $extra_flags \
             $query_flags \
@@ -70,7 +83,7 @@ function coral --description "Browse local branches with fzf"
             --bind 'ctrl-o:execute(_coral_open_pr {1})' \
             $jira_flags \
             --bind $force_bind \
-            --bind 'alt-r:execute(_coral_refresh)+reload(_coral_list)' \
+            --bind "alt-r:execute(_coral_refresh)+reload(_coral_list $list_mode)" \
             --bind $rebase_bind \
             --prompt="Branch> " \
             --preview='_coral_preview {1}' \

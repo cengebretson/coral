@@ -1,5 +1,7 @@
-function _coral_list
+function _coral_list --argument-names list_mode
     _coral_load_config
+    test -n "$list_mode"; or set list_mode (_coral_list_mode)
+    contains -- "$list_mode" short full; or set list_mode full
 
     set -f base_branch (_coral_base_branch); or return 1
 
@@ -136,6 +138,9 @@ function _coral_list
         set -f trackshort $parts[3]
 
         set -f pr_line ''
+        set -f pr_state ''
+        set -f pr_review ''
+        set -f pr_labels ''
         if set -f pr_idx (contains --index -- $branch $pr_keys)
             set -f pr_line $pr_vals[$pr_idx]
         end
@@ -157,6 +162,14 @@ function _coral_list
             set -f pr_display (string split \t (_coral_pr_status_display "$pr_state" "$pr_review"))
             set -f dot_color $pr_display[2]
             set -f dot $pr_display[3]
+        end
+
+        if test "$list_mode" = short
+            set -f suffix $wt_marker
+            if test -n "$pr_state"
+                set suffix (printf '%s'"$dot_color"'%s\e[0m' $wt_marker $dot)
+            end
+        else if test -n "$pr_state"
             set -f suffix (printf '%s'"$dot_color"'%s\e[0m  %s' $wt_marker $dot $age)
             if test -n "$pr_labels"
                 for label in (string split , $pr_labels)
@@ -170,13 +183,15 @@ function _coral_list
             set -f suffix (printf '%s   %s' $wt_marker $age)
         end
 
-        set -f ahead (string match -r '[+]([0-9]+)' $trackshort)[2]
-        set -f behind (string match -r '[-]([0-9]+)' $trackshort)[2]
-        if test -n "$ahead"
-            set suffix $suffix(printf '  \e[36m↑%s\e[0m' $ahead)
-        end
-        if test -n "$behind"
-            set suffix $suffix(printf '  \e[33m↓%s\e[0m' $behind)
+        if test "$list_mode" = full
+            set -f ahead (string match -r '[+]([0-9]+)' $trackshort)[2]
+            set -f behind (string match -r '[-]([0-9]+)' $trackshort)[2]
+            if test -n "$ahead"
+                set suffix $suffix(printf '  \e[36m↑%s\e[0m' $ahead)
+            end
+            if test -n "$behind"
+                set suffix $suffix(printf '  \e[33m↓%s\e[0m' $behind)
+            end
         end
 
         set -f padded (string pad -r -w $col_width $branch)
