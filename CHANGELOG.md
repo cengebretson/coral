@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-06-15
+
 ### Added
 
 - A `VERSION` file and a tag-triggered release workflow that verifies the tag
@@ -27,4 +29,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The Jira keybinding is only registered when `CORAL_JIRA_URL_TEMPLATE` is set,
   matching the help header.
 
-[Unreleased]: https://github.com/cengebretson/coral/commits/main
+[Unreleased]: https://github.com/cengebretson/coral/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/cengebretson/coral/releases/tag/v0.3.0
