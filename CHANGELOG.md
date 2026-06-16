@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Clarified that `Alt-d` force-deletes (`git branch -D`, removing unmerged
+  branches) in the help header and README — the behavior was already force-delete
+  with a force-labeled confirmation. Removed the unreachable safe-delete code path.
+
 ## [0.3.0] - 2026-06-15
 
 ### Added

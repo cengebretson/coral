@@ -45,7 +45,7 @@ function coral --description "Browse local branches with fzf"
     # In tmux: execute-silent + popup keeps fzf visible.
     # Outside tmux: execute (blocking) runs the action inline.
     if test "$use_tmux" = 1
-        set -f force_bind "alt-d:execute-silent(_coral_run_delete {1} force)+reload(_coral_list $list_mode)"
+        set -f force_bind "alt-d:execute-silent(_coral_run_delete {1})+reload(_coral_list $list_mode)"
         set -f rebase_bind "alt-e:execute-silent(_coral_run_rebase {1})+reload(_coral_list $list_mode)"
     else
         set -f force_bind "alt-d:execute(_coral_force_delete_branch {1})+reload(_coral_list $list_mode)"
@@ -93,7 +93,7 @@ function coral --description "Browse local branches with fzf"
     set header_lines $header_lines \
         (_coral_help_line preview "$preview_key" "toggle preview pane") \
         (_coral_help_line rebase "$rebase_key" "rebase selected branch") \
-        (_coral_help_line delete "$delete_key" "delete local branch") \
+        (_coral_help_line delete "$delete_key" "force-delete local branch") \
         (_coral_help_line refresh "$refresh_key" "clear cache, prune worktrees, reload")
     set -f header (string join \n $header_lines | string collect)
 
