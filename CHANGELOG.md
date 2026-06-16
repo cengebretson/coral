@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-06-15
+
 ### Changed
 
 - Clarified that `Alt-d` force-deletes (`git branch -D`, removing unmerged
@@ -50,5 +52,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The Jira keybinding is only registered when `CORAL_JIRA_URL_TEMPLATE` is set,
   matching the help header.
 
-[Unreleased]: https://github.com/cengebretson/coral/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/cengebretson/coral/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/cengebretson/coral/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/cengebretson/coral/releases/tag/v0.3.0
