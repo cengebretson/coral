@@ -13,16 +13,9 @@ function _coral_check_dependencies --description "Validate coral hard dependenci
         set failures (math $failures + 1)
     end
 
-    if command -q fzf
-        set -f fzf_ver (fzf --version 2>/dev/null | string match -r '\d+\.\d+' | head -1)
-        if test -n "$fzf_ver"
-            set -f major (string split . $fzf_ver)[1]
-            set -f minor (string split . $fzf_ver)[2]
-            if test "$major" -eq 0 -a "$minor" -lt 57
-                echo "coral: fzf $fzf_ver found; 0.57+ required." >&2
-                set failures (math $failures + 1)
-            end
-        end
+    if _coral_fzf_outdated
+        echo "coral: fzf "(_coral_fzf_version)" found; 0.57+ required." >&2
+        set failures (math $failures + 1)
     end
 
     test $failures -eq 0

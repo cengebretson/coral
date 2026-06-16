@@ -15,17 +15,13 @@ function _coral_doctor
     end
     _coral_doctor_command jq; or set failures (math $failures + 1)
 
-    if command -q fzf
-        set -f fzf_ver (fzf --version 2>/dev/null | string match -r '\d+\.\d+' | head -1)
-        if test -n "$fzf_ver"
-            set -f major (string split . $fzf_ver)[1]
-            set -f minor (string split . $fzf_ver)[2]
-            if test "$major" -eq 0 -a "$minor" -lt 57
-                _coral_doctor_fail "fzf $fzf_ver found; 0.57+ required"
-                set failures (math $failures + 1)
-            else
-                _coral_doctor_ok "fzf $fzf_ver"
-            end
+    set -f fzf_ver (_coral_fzf_version)
+    if test -n "$fzf_ver"
+        if _coral_fzf_outdated
+            _coral_doctor_fail "fzf $fzf_ver found; 0.57+ required"
+            set failures (math $failures + 1)
+        else
+            _coral_doctor_ok "fzf $fzf_ver"
         end
     end
 

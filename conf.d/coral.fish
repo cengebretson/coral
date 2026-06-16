@@ -13,15 +13,8 @@ end
 
 if not command -q fzf
     _coral_startup_warn_once 'coral: fzf not found - run: brew install fzf'
-else
-    set -l fzf_ver (fzf --version 2>/dev/null | string match -r '\d+\.\d+' | head -1)
-    if test -n "$fzf_ver"
-        set -l major (string split . $fzf_ver)[1]
-        set -l minor (string split . $fzf_ver)[2]
-        if test "$major" -eq 0 -a "$minor" -lt 57
-            _coral_startup_warn_once "coral: fzf $fzf_ver found; 0.57+ required - run: brew upgrade fzf"
-        end
-    end
+else if _coral_fzf_outdated
+    _coral_startup_warn_once "coral: fzf "(_coral_fzf_version)" found; 0.57+ required - run: brew upgrade fzf"
 end
 
 if not command -q jq

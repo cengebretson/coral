@@ -69,7 +69,7 @@ Utility commands:
 | `?` | Toggle the help/keybinding header. |
 | `Enter` | Checkout the selected branch, or go to its linked worktree when already checked out elsewhere. |
 | `Ctrl-o` | Open the selected branch's GitHub PR. |
-| `Ctrl-j` | Open the Jira issue parsed from the branch name. |
+| `Ctrl-j` | Open the Jira issue parsed from the branch name. Active only when `CORAL_JIRA_URL_TEMPLATE` is set. |
 | `Ctrl-p` | Toggle the preview pane. |
 | `Alt-e` | Rebase the selected branch. |
 | `Alt-d` | Force-delete the selected local branch (`git branch -D`) after confirmation. Removes the branch even if it is not fully merged. |
@@ -143,11 +143,13 @@ The default branch key pattern is `[A-Z]+-[0-9]+`, so branches like `feature/ABC
 Syntax-check the plugin:
 
 ```fish
-fish -n functions/*.fish conf.d/*.fish completions/*.fish
+fish -n functions/*.fish conf.d/*.fish completions/*.fish tests/*.fish
 ```
 
-Run the fishtape suite:
+Run the test suite (the same entry point CI and `git release` use):
 
 ```fish
-fishtape tests/*.test.fish
+tests/check.sh
 ```
+
+See [CLAUDE.md](CLAUDE.md) for the versioning and release workflow.
