@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      FZF_VERSION: "0.65.0"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install fish, jq, and shellcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fish jq shellcheck
+
+      - name: Install fzf (0.57+ required by coral)
+        run: |
+          curl -fsSL "https://github.com/junegunn/fzf/releases/download/v${FZF_VERSION}/fzf-${FZF_VERSION}-linux_amd64.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin
+          fzf --version
+
+      - name: Install fishtape
+        run: |
+          fish -c '
+            curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source
+            and fisher install jorgebucaran/fishtape
+          '
+
+      - name: Syntax-check fish files
+        run: fish -n functions/*.fish conf.d/*.fish completions/*.fish tests/*.fish
+
+      - name: ShellCheck scripts
+        run: shellcheck tests/check.sh .release-sync
+
+      - name: Run tests
+        run: tests/check.sh
