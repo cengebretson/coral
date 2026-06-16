@@ -13,6 +13,16 @@ function _coral_open_jira --argument-names branch
         return 1
     end
 
-    open "$url" 2>/dev/null
-    or echo "coral: could not open browser" >&2
+    # macOS uses `open`; Linux uses `xdg-open`. Match the cross-platform handling
+    # the rest of coral already does (stat, date, key labels).
+    if command -q open
+        open "$url" 2>/dev/null
+        or echo "coral: could not open browser" >&2
+    else if command -q xdg-open
+        xdg-open "$url" >/dev/null 2>&1
+        or echo "coral: could not open browser" >&2
+    else
+        echo "coral: no browser opener found (need open or xdg-open)" >&2
+        return 1
+    end
 end

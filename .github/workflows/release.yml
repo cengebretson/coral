@@ -1,0 +1,77 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      FZF_VERSION: "0.65.0"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install fish and jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fish jq
+
+      - name: Install fzf (0.57+ required by coral)
+        run: |
+          curl -fsSL "https://github.com/junegunn/fzf/releases/download/v${FZF_VERSION}/fzf-${FZF_VERSION}-linux_amd64.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin
+          fzf --version
+
+      - name: Install fishtape
+        run: |
+          fish -c '
+            curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source
+            and fisher install jorgebucaran/fishtape
+          '
+
+      - name: Verify VERSION matches tag
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          file="$(cat VERSION)"
+          if [ "${tag}" != "${file}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match VERSION (${file})" >&2
+            exit 1
+          fi
+
+      - name: Verify _coral_version matches tag
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          runtime="$(fish -c 'source functions/_coral_version.fish; _coral_version')"
+          if [ "${tag}" != "${runtime}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match _coral_version (${runtime})" >&2
+            exit 1
+          fi
+
+      - name: Run checks
+        run: tests/check.sh
+
+      - name: Extract changelog notes
+        run: |
+          awk -v ver="${GITHUB_REF_NAME#v}" '
+            $0 ~ ("^## \\[" ver "\\]") { flag = 1; next }
+            /^## \[/ && flag { flag = 0 }
+            flag { print }
+          ' CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "No changelog section found for ${GITHUB_REF_NAME}" >&2
+            exit 1
+          fi
+          cat release-notes.md
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
+            --notes-file release-notes.md

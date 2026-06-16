@@ -19,8 +19,10 @@ function _coral_list --argument-names list_mode
 
     # Single git call: branch name + relative date + upstream tracking (free, no extra subprocess)
     # Filter in fish rather than grep to avoid regex metachar issues with branch names
+    # Use :track (e.g. "[ahead 1, behind 2]") not :trackshort (which is only =/>/<) so the
+    # full-mode ahead/behind counts below have actual numbers to parse.
     set -f branch_data_all (git branch --sort=-committerdate \
-        --format='%(refname:short)%09%(committerdate:relative)%09%(upstream:trackshort)%09%(objectname)')
+        --format='%(refname:short)%09%(committerdate:relative)%09%(upstream:track)%09%(objectname)')
     set -f branch_data
     for line in $branch_data_all
         set -f _b (string split \t $line)[1]
@@ -135,7 +137,7 @@ function _coral_list --argument-names list_mode
         set -f parts (string split \t $line)
         set -f branch $parts[1]
         set -f age $parts[2]
-        set -f trackshort $parts[3]
+        set -f track $parts[3]
 
         set -f pr_line ''
         set -f pr_state ''
@@ -184,8 +186,8 @@ function _coral_list --argument-names list_mode
         end
 
         if test "$list_mode" = full
-            set -f ahead (string match -r '[+]([0-9]+)' $trackshort)[2]
-            set -f behind (string match -r '[-]([0-9]+)' $trackshort)[2]
+            set -f ahead (string match -r 'ahead ([0-9]+)' $track)[2]
+            set -f behind (string match -r 'behind ([0-9]+)' $track)[2]
             if test -n "$ahead"
                 set suffix $suffix(printf '  \e[36m↑%s\e[0m' $ahead)
             end

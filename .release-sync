@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+#
+# git-release after-bump hook. Runs from the repo root with the new version as
+# $1, after git-release has written the VERSION file and before it commits.
+#
+# coral is a Fisher plugin: Fisher only installs functions/, conf.d/, and
+# completions/, so the root VERSION file is never present at runtime. The
+# authoritative runtime version therefore lives in functions/_coral_version.fish,
+# which this hook rewrites so it always matches VERSION. The version test
+# enforces that they agree.
+set -euo pipefail
+
+version="$1"
+[[ -n "${version}" ]] || { echo ".release-sync: no version argument" >&2; exit 1; }
+
+cat > functions/_coral_version.fish <<EOF
+function _coral_version
+    printf '${version}\\n'
+end
+EOF
+
+echo ".release-sync: set _coral_version to ${version}"

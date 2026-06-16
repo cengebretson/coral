@@ -47,11 +47,9 @@ function coral --description "Browse local branches with fzf"
     if test "$use_tmux" = 1
         set -f force_bind "alt-d:execute-silent(_coral_run_delete {1} force)+reload(_coral_list $list_mode)"
         set -f rebase_bind "alt-e:execute-silent(_coral_run_rebase {1})+reload(_coral_list $list_mode)"
-        set -f extra_flags
     else
         set -f force_bind "alt-d:execute(_coral_force_delete_branch {1})+reload(_coral_list $list_mode)"
         set -f rebase_bind "alt-e:execute(_coral_rebase {1})+reload(_coral_list $list_mode)"
-        set -f extra_flags
     end
 
     set -f query_flags
@@ -82,11 +80,14 @@ function coral --description "Browse local branches with fzf"
         set -f refresh_key "$alt_key_label-r"
     end
 
-    set -f jira_flags --bind 'ctrl-j:execute(_coral_open_jira {1})'
+    # Only bind (and advertise) Ctrl-j when a Jira template is configured, so the
+    # binding and the help header stay in agreement.
+    set -f jira_flags
     set -f header_lines \
         (_coral_help_line checkout Enter "checkout branch or open linked worktree") \
         (_coral_help_line pr "$pr_key" "open GitHub PR")
     if set -q CORAL_JIRA_URL_TEMPLATE; and test -n "$CORAL_JIRA_URL_TEMPLATE"
+        set jira_flags --bind 'ctrl-j:execute(_coral_open_jira {1})'
         set header_lines $header_lines (_coral_help_line jira "$jira_key" "open Jira issue from branch name")
     end
     set header_lines $header_lines \
@@ -101,7 +102,6 @@ function coral --description "Browse local branches with fzf"
 
     set -f result (_coral_list $list_mode \
         | _fzf_wrapper \
-            $extra_flags \
             $query_flags \
             --ansi \
             --layout=default \

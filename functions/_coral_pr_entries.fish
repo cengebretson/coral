@@ -50,7 +50,9 @@ function _coral_pr_entries
         if test -n "$rows"
             printf '%s\n' $rows
         else
-            printf '%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n' "$branch" "$sep" "$sha" "$sep" "" "$sep" "" "$sep" "" "$sep" "" "$sep" "" "$sep" ""
+            # Cache a no-PR miss: branch, sha, then 6 empty fields (state, review,
+            # labels, title, base, url) so the entry still has the 8-field shape.
+            printf '%s\n' (string join "$sep" "$branch" "$sha" '' '' '' '' '' '')
         end
     end
 
