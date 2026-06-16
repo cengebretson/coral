@@ -23,6 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `↑`/`↓` counts never appeared; it now reads `%(upstream:track)`.
 - The Jira shortcut works on Linux, falling back to `xdg-open` when `open` is
   unavailable instead of always failing.
+- Cache staleness works on Linux. `_coral_file_mtime` tried BSD `stat -f` first,
+  but GNU `stat -f` prints filesystem info instead of erroring, so the mtime was
+  garbage; it now tries GNU `stat -c` first and validates the result is numeric.
 
 ### Changed
 
