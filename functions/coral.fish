@@ -100,7 +100,9 @@ function coral --description "Browse local branches with fzf"
     # Strip input-border and list-border from global FZF_DEFAULT_OPTS — coral owns its layout.
     set -lx FZF_DEFAULT_OPTS (string replace --regex --all -- '--(?:input|list)-border\S*' '' "$FZF_DEFAULT_OPTS")
 
-    set -f result (_coral_list $list_mode \
+    # First paint from cache only (instant), then enrich: the start bind reloads
+    # with a fetching _coral_list so PR data streams in without blocking launch.
+    set -f result (_coral_list $list_mode nofetch \
         | _fzf_wrapper \
             $query_flags \
             --ansi \
@@ -113,7 +115,7 @@ function coral --description "Browse local branches with fzf"
             --info=inline-right \
             --delimiter='\t' \
             --with-nth=2 \
-            --bind 'start:hide-header' \
+            --bind "start:hide-header+reload(_coral_list $list_mode)" \
             --bind $preview_toggle \
             --bind $help_toggle \
             --bind 'ctrl-o:execute(_coral_open_pr {1})' \

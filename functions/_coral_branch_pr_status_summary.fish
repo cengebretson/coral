@@ -1,4 +1,15 @@
 function _coral_branch_pr_status_summary --argument-names branch
+    # Prefer the cached PR row (no network) — this drives the delete confirm
+    # prompt. Fall back to a live lookup only when the branch isn't cached.
+    set -f row (_coral_cached_pr_row "$branch")
+    if test -n "$row"
+        set -f parts (string split \x01 -- $row)
+        set -f state $parts[3]
+        test -n "$state"; or return 1
+        _coral_pr_status_summary "$state" "$parts[4]"
+        return 0
+    end
+
     _coral_is_github_repo; or return 1
     command -q gh; or return 1
 

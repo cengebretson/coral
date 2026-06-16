@@ -1,4 +1,6 @@
-function _coral_list --argument-names list_mode
+function _coral_list --argument-names list_mode no_fetch
+    # no_fetch="nofetch" renders from the cache only (no `gh` calls), for an
+    # instant first paint; coral.fish then triggers a fetching reload to enrich.
     _coral_load_config
     test -n "$list_mode"; or set list_mode (_coral_list_mode)
     contains -- "$list_mode" short full; or set list_mode full
@@ -75,6 +77,14 @@ function _coral_list --argument-names list_mode
         set -f pr_entries $valid_entries
     end
 
+    # Pre-split cached entries once into a parallel key array, so the per-branch
+    # lookup below is a single `contains` instead of re-splitting every entry for
+    # every branch (was O(branches × entries) with a string split each time).
+    set -f entry_keys
+    for entry in $pr_entries
+        set entry_keys $entry_keys (string split \x01 -- $entry)[1]
+    end
+
     set -f pr_keys
     set -f pr_vals
     set -f fetch_pairs
@@ -82,20 +92,12 @@ function _coral_list --argument-names list_mode
         set -f branch $branches[$idx]
         set -f sha $branch_shas[$idx]
         set -f cached_line ''
-        if set -f pr_idx (contains --index -- $branch $pr_keys)
-            set cached_line $pr_vals[$pr_idx]
-        else if test -n "$pr_entries"
-            for entry in $pr_entries
-                set -f cached_parts (string split \x01 $entry)
-                if test "$cached_parts[1]" = "$branch"
-                    set cached_line $entry
-                    break
-                end
-            end
+        if set -f e_idx (contains --index -- $branch $entry_keys)
+            set cached_line $pr_entries[$e_idx]
         end
 
         if test -n "$cached_line"
-            set -f cached_parts (string split \x01 $cached_line)
+            set -f cached_parts (string split \x01 -- $cached_line)
             if test "$cached_parts[2]" = "$sha"
                 set pr_keys $pr_keys $branch
                 set pr_vals $pr_vals $cached_line
@@ -108,7 +110,7 @@ function _coral_list --argument-names list_mode
         set fetch_pairs $fetch_pairs $branch $sha
     end
 
-    if test (count $fetch_pairs) -gt 0; and test -n "$cache_file"; and test "$github_repo" = 1
+    if test "$no_fetch" != nofetch; and test (count $fetch_pairs) -gt 0; and test -n "$cache_file"; and test "$github_repo" = 1
         if not command -q gh
             printf 'coral: gh not found — install the GitHub CLI for PR status\n' >&2
         else

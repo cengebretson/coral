@@ -13,6 +13,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   branches) in the help header and README — the behavior was already force-delete
   with a force-labeled confirmation. Removed the unreachable safe-delete code path.
 
+### Performance
+
+- The preview no longer runs a `gh pr view` (a ~0.4s network round-trip) on every
+  cursor move; it reads the PR data the branch list already cached, falling back
+  to a live lookup only on a cache miss. Scrolling is now instant.
+- The branch list paints instantly from cache on launch, then enriches with PR
+  data via a background reload, instead of blocking on the initial fetch.
+- The delete prompt and rebase reuse cached PR data instead of making their own
+  `gh` calls.
+- Cache-to-branch matching in the list is no longer quadratic (it pre-splits the
+  cached rows once instead of re-splitting every row for every branch).
+
 ## [0.3.0] - 2026-06-15
 
 ### Added
