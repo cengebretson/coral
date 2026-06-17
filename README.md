@@ -152,4 +152,6 @@ Run the test suite (the same entry point CI and `git release` use):
 tests/check.sh
 ```
 
+The runner uses fish private mode and fails on either a non-zero `fishtape` exit or any TAP `not ok` line, so CI and releases cannot pass with masked test failures.
+
 See [CLAUDE.md](CLAUDE.md) for the versioning and release workflow.

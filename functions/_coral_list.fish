@@ -53,12 +53,12 @@ function _coral_list --argument-names list_mode no_fetch
     set -f pr_entries
     set -f cache_stale 0
     set -f cache_age
-    if test -n "$cache_file"; and test -f $cache_file
+    if test -n "$cache_file"; and test -f "$cache_file"
         # Separate stat from math so a missing mtime doesn't produce a bad cache_age
         set -f mtime (_coral_file_mtime "$cache_file")
         if test -n "$mtime"
             set -f cache_age (math (date +%s) - $mtime)
-            set -f pr_entries (cat $cache_file)
+            set -f pr_entries (_coral_read_pr_cache "$cache_file")
             if test $cache_age -ge $cache_ttl
                 set cache_stale 1
             end
@@ -126,8 +126,8 @@ function _coral_list --argument-names list_mode no_fetch
                     end
                 end
 
-                set -f cache_tmp $cache_file.tmp
-                printf '%s\n' $pr_vals > $cache_tmp && mv $cache_tmp $cache_file
+                _coral_write_pr_cache "$cache_file" $pr_vals
+                or return 1
                 set cache_stale 0
             else
                 printf 'coral: no PR data returned — run gh auth login if not authenticated\n' >&2

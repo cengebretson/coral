@@ -1,7 +1,9 @@
 source (dirname (status --current-filename))/helpers.fish
 
 set temp_config_home (mktemp -d)
+set temp_cache_home (mktemp -d)
 set -gx XDG_CONFIG_HOME $temp_config_home
+set -gx XDG_CACHE_HOME $temp_cache_home
 coral_test_reset
 
 function coral_make_branch_list_repo
@@ -53,4 +55,4 @@ end
 @test "branch list shows current branch even when it is a base branch" (contains -- trunk $trunk_branch_names; echo $status) = 0
 
 rm -rf "$temp_repo"
-rm -rf "$temp_config_home"
+rm -rf "$temp_config_home" "$temp_cache_home"

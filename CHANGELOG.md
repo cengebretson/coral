@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Restored the original checkout after rebasing a selected non-current branch.
+- Made the test runner fail when TAP output contains `not ok`, even if the
+  underlying `fishtape` process exits successfully.
+- Quoted PR cache paths and centralized cache reads/writes to keep cache access
+  safe for XDG paths containing spaces.
+
+### Tests
+
+- Added rebase coverage for restoring the original branch after rebasing a
+  selected branch.
+
 ## [0.3.1] - 2026-06-15
 
 ### Changed

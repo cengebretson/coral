@@ -64,6 +64,16 @@ function _coral_rebase --argument-names branch
         return 1
     end
 
+    if test "$branch" != "$original"
+        echo ""
+        echo "Restoring $original..."
+        git checkout "$original"
+        or begin
+            echo "ERROR: could not restore branch '$original' — you may need to checkout manually" >&2
+            return 1
+        end
+    end
+
     echo ""
     echo "Done. $branch is up to date with $upstream."
     echo ""

@@ -31,8 +31,11 @@ fish -n functions/*.fish conf.d/*.fish completions/*.fish tests/*.fish
 Run the test suite (this is also what CI and `git release` run):
 
 ```bash
-tests/check.sh          # wraps: fish -c 'fishtape tests/*.test.fish'
+tests/check.sh          # wraps: fish --private -c 'fishtape tests/*.test.fish'
 ```
+
+The wrapper uses fish private mode for test isolation and treats TAP `not ok`
+lines as failures even if the underlying `fishtape` process exits successfully.
 
 `.release-sync` and `tests/check.sh` are bash; run `shellcheck` on them before finishing.
 

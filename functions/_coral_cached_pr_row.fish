@@ -6,9 +6,7 @@ function _coral_cached_pr_row --argument-names branch
     test -n "$branch"; or return 1
 
     set -f cache_file (_coral_cache_file); or return 1
-    test -f "$cache_file"; or return 1
-
-    for entry in (cat "$cache_file")
+    for entry in (_coral_read_pr_cache "$cache_file")
         set -f parts (string split \x01 -- $entry)
         test (count $parts) -ge 8; or continue
         if test "$parts[1]" = "$branch"
