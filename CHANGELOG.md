@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `Alt-d` can now delete a branch checked out in a linked worktree. coral removes
+  the worktree first, then deletes the branch, instead of silently failing on
+  git's "used by worktree" refusal. A dirty worktree is left intact (the delete
+  is refused with git's reason) so uncommitted work is never destroyed.
+- Deleting or opening a branch whose worktree directory was removed but never
+  pruned (a stale entry) no longer errors. coral prunes the dead record and then
+  deletes or checks out the branch.
+- Deleting or checking out a branch that is checked out in the main worktree now
+  fails with a clear message naming the worktree path, instead of a raw git
+  error, and never auto-removes the primary checkout.
+- The tmux worktree-open path reports an error when `tmux new-window` fails
+  instead of failing silently.
+
+### Tests
+
+- Added coverage for `_coral_branch_checkout_path`, which resolves the main and
+  linked worktree paths and is empty for an unchecked-out branch.
+
 ## [0.3.2] - 2026-06-17
 
 ### Fixed

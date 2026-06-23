@@ -136,16 +136,32 @@ function coral --description "Browse local branches with fzf"
     test -z "$branch"; and return
 
     set -f wt_path (_coral_worktree_path "$branch")
-    if test -n "$wt_path"
+    if test -n "$wt_path"; and test -d "$wt_path"
         if test "$use_tmux" = 1
             tmux new-window -c "$wt_path"
+            or echo "coral: could not open worktree window at $wt_path" >&2
         else
             echo "coral: branch is already checked out in linked worktree"
             cd "$wt_path"
             and pwd
         end
-    else
+    else if test -n "$wt_path"
+        # Stale linked entry: the directory was removed but not pruned, so git
+        # still reports it (the icon shows) and would block checkout with "used
+        # by worktree". Prune the dead record, then check out in this worktree.
+        command git worktree prune >/dev/null 2>&1
         git checkout "$branch"
         or echo "coral: could not check out '$branch'" >&2
+    else
+        # Not a linked worktree, but it may be checked out in the main worktree
+        # (which the linked-only lookup skips). git won't allow a second
+        # checkout, so report where it lives instead of dumping a raw git error.
+        set -f other_wt (_coral_branch_checkout_path "$branch")
+        if test -n "$other_wt"
+            echo "coral: '$branch' is checked out in the worktree at $other_wt" >&2
+        else
+            git checkout "$branch"
+            or echo "coral: could not check out '$branch'" >&2
+        end
     end
 end
