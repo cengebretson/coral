@@ -72,7 +72,7 @@ Utility commands:
 | `Ctrl-j` | Open the Jira issue parsed from the branch name. Active only when `CORAL_JIRA_URL_TEMPLATE` is set. |
 | `Ctrl-p` | Toggle the preview pane. |
 | `Alt-e` | Rebase the selected branch. |
-| `Alt-d` | Force-delete the selected local branch (`git branch -D`) after confirmation. Removes the branch even if it is not fully merged. |
+| `Alt-d` | Force-delete the selected local branch (`git branch -D`) after confirmation. If the branch has a dirty linked worktree, Coral asks again before forcing worktree removal. |
 | `Alt-r` | Clear this repo's PR cache, prune stale worktree metadata, and refresh the list. |
 
 ## Tips

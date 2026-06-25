@@ -209,7 +209,7 @@ When an optional tool is absent, keybinds should either remain useful through a 
 | `Ctrl-j` | Open Jira issue | Always visible. Requires `CORAL_JIRA_URL_TEMPLATE` and a Jira key parsed from the branch name |
 | `Ctrl-p` | Toggle preview | Preview includes PR info, Jira URL, worktree path, commits ahead, and changed files |
 | `Alt-e` | Rebase branch | Uses PR base when available, otherwise inferred upstream |
-| `Alt-d` | Delete selected local branch | Header says `delete`; force-delete wording is shown only inside the confirmation popup |
+| `Alt-d` | Delete selected local branch | Header says `delete`; force-delete wording is shown only inside the confirmation popup. Dirty linked worktrees require a second confirmation before forced worktree removal |
 | `Alt-r` | Refresh | Clears only the current repo's PR cache, prunes stale worktree metadata, and reloads the list |
 
 Subcommands:
@@ -238,7 +238,7 @@ Cache helpers are intentionally separate so list rendering, refresh keybinds, an
 | `_coral_refresh` | clear the PR cache and run `git worktree prune` best-effort before list reload |
 | `_coral_config_file` | resolve the XDG config file path |
 | `_coral_confirm` | confirmation UI, using gum when present and fzf fallback otherwise |
-| `_coral_delete_common` | shared regular/force branch deletion flow |
+| `_coral_delete_common` | shared regular/force branch deletion flow, including a second confirmation before forcing dirty linked worktree removal |
 | `_coral_doctor*` | read-only diagnostics for dependencies, config, repo state, cache, and GitHub auth |
 | `_coral_file_mtime` | return cache mtime using BSD `stat -f %m` or GNU `stat -c %Y` |
 | `_coral_hash_key` | derive stable cache/file keys with `git hash-object --stdin` so no extra hash utility is required |

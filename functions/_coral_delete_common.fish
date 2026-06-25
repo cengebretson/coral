@@ -46,11 +46,21 @@ function _coral_delete_common --argument-names branch
         if test -n "$wt_path"
             if test -d "$wt_path"
                 # Plain remove (no --force): refuses on a dirty worktree so we
-                # never silently destroy uncommitted work. git's error explains
-                # why; abort the branch delete so the two stay consistent.
-                if not git worktree remove "$wt_path" 2>&1
-                    printf 'Worktree removal failed; branch not deleted.\n' >&2
-                    return 1
+                # never silently destroy uncommitted work. When it fails, ask
+                # once more before forcing removal and deleting the branch.
+                set -f remove_output (git worktree remove "$wt_path" 2>&1)
+                set -f remove_status $status
+                if test "$remove_status" -ne 0
+                    printf '%s\n' $remove_output >&2
+                    if not _coral_confirm "Worktree removal failed. Force remove this worktree and delete the local branch? This can delete uncommitted changes."
+                        printf 'Worktree removal failed; branch not deleted.\n' >&2
+                        return 1
+                    end
+
+                    if not git worktree remove --force "$wt_path" 2>&1
+                        printf 'Forced worktree removal failed; branch not deleted.\n' >&2
+                        return 1
+                    end
                 end
             else
                 # Stale entry: the directory is already gone but the admin record

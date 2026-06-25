@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Dirty linked worktree deletion now offers a second explicit confirmation to
+  force-remove the worktree and delete the local branch, instead of stopping
+  after Git rejects the plain removal.
+
+### Tests
+
+- Added delete coverage for dirty linked worktrees when force removal is
+  accepted or declined.
+
 ## [0.3.3] - 2026-06-23
 
 ### Fixed
