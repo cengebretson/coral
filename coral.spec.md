@@ -42,7 +42,6 @@ coral/
 │   ├── _coral_open_jira.fish
 │   ├── _coral_open_pr.fish
 │   ├── _coral_popup.fish
-│   ├── _coral_pr_batch_size.fish
 │   ├── _coral_pr_entries.fish
 │   ├── _coral_pr_history_days.fish
 │   ├── _coral_pr_status_display.fish
@@ -120,7 +119,6 @@ The config file is optional. If it is missing, coral uses the defaults below. Us
 | `CORAL_JIRA_KEY_PATTERN` | `[A-Z]+-[0-9]+` | Regex used to extract a Jira issue key from the selected branch |
 | `CORAL_JIRA_URL_TEMPLATE` | _(unset)_ | URL template for Jira issues. Use `{key}` as the issue-key placeholder, e.g. `https://yourorg.atlassian.net/browse/{key}` |
 | `CORAL_LIST_MODE` | `full` | Branch list density. `full` shows PR status, commit age, labels, cache stale marker, and ahead/behind counts; `short` shows branch name plus PR status |
-| `CORAL_PR_BATCH_SIZE` | `10` | Max concurrent branch-scoped `gh pr list --head` lookups during cache refresh. Positive integers only; invalid values fall back to `10` |
 | `CORAL_PR_HISTORY_DAYS` | `30` | How far back to include merged/closed PRs by `updatedAt`. Set `0` to show open PRs only; invalid values fall back to `30` |
 
 Example config:
@@ -128,7 +126,6 @@ Example config:
 ```fish
 set -g CORAL_JIRA_URL_TEMPLATE 'https://yourorg.atlassian.net/browse/{key}'
 set -g CORAL_LIST_MODE full
-set -g CORAL_PR_BATCH_SIZE 10
 set -g CORAL_PR_HISTORY_DAYS 30
 ```
 
@@ -252,8 +249,7 @@ Cache helpers are intentionally separate so list rendering, refresh keybinds, an
 | `_coral_open_pr` | open selected branch's PR through `gh` |
 | `_coral_popup` | tmux popup wrapper for delete/rebase actions |
 | `_coral_pr_status_display` / `_coral_pr_status_summary` | render PR status markers for list and preview output |
-| `_coral_pr_batch_size` | parse `CORAL_PR_BATCH_SIZE`, defaulting invalid values to `10` |
-| `_coral_pr_entries` | batch-fetch PR metadata for stale local branch heads and emit branch/SHA cache rows |
+| `_coral_pr_entries` | fetch PR metadata in two bulk `gh pr list` calls and emit branch/SHA cache rows for the requested branch heads |
 | `_coral_pr_history_days` | parse `CORAL_PR_HISTORY_DAYS`, defaulting invalid values to `30` |
 | `_coral_preview` | right-side preview content |
 | `_coral_since_date` | compute a portable YYYY-MM-DD cutoff date for PR history search |
@@ -278,12 +274,13 @@ Default PR lookup should be scoped to the local branches coral is displaying:
 - collect local branch names from `_coral_list`
 - include each local branch's current commit SHA in the cache row
 - keep "no PR" cache rows so branches without PRs are not rechecked until their SHA changes or cache TTL expires
-- call `gh pr list --head <branch> --state all --limit 20` for those branch heads only when `origin` is a GitHub remote
-- run branch lookups in parallel batches capped by `CORAL_PR_BATCH_SIZE`
-- keep open PRs regardless of age
-- keep merged/closed PRs only when `updatedAt` is inside `CORAL_PR_HISTORY_DAYS`
+- fetch PR metadata with two bulk `gh pr list` calls (not one call per branch), only when `origin` is a GitHub remote:
+  - `--state open --limit 200` for every open PR, so open PRs are kept regardless of age
+  - `--state all --search "updated:>=<since> sort:updated-desc" --limit 200` for the merged/closed window, where `<since>` is derived from `CORAL_PR_HISTORY_DAYS`
+- merge both result sets, prefer `OPEN > MERGED > CLOSED`, and keep one row per head branch, then bucket against the requested branches
+- if both calls fail to return a JSON array (a `gh`/auth outage), return nothing so the caller warns and skips caching rather than poisoning the cache with false "no PR" misses
 
-This avoids missing older open PRs in large repositories where repo-wide `--state all --limit 200` can be dominated by recent closed/merged PR history. It also avoids fetching every open PR in the repo when the user only needs status for local branches. Once cached, unchanged branch heads are reused without a GitHub call; new or moved branch heads are refreshed selectively. `CORAL_PR_HISTORY_DAYS` controls the merged/closed lookback window and defaults to `30`; set it to `0` for open-PR-only status.
+Splitting the open set from the windowed all-state set avoids missing older open PRs while still bounding the closed/merged volume by the history window — without the per-branch round-trips the earlier design used. Once cached, unchanged branch heads are reused without a GitHub call; new or moved branch heads are refreshed selectively. `CORAL_PR_HISTORY_DAYS` controls the merged/closed lookback window and defaults to `30`; set it to `0` for open-PR-only status.
 
 Cache row format uses ASCII unit separator (`\x01`):
 
@@ -340,10 +337,10 @@ Minimum test coverage before publishing:
 - delete/rebase actions fall back when tmux is absent
 - `CORAL_CACHE_TTL` accepts positive integers and rejects invalid values
 - `CORAL_LIST_MODE` defaults to `full`, accepts `full` and `short`, and rejects invalid values
-- `CORAL_PR_BATCH_SIZE` defaults to 10 and rejects invalid values
 - `CORAL_PR_HISTORY_DAYS` defaults to 30, accepts 0, and rejects invalid values
-- open PRs are not dropped in repos with more than 200 recent all-state PRs
-- PR lookup queries only local branch heads, not every open PR in the repo
+- open PRs are kept regardless of age and win dedup over a merged/closed PR on the same head
+- a recently-updated closed/merged PR is included from the windowed all-state query
+- a total `gh` failure returns no rows (and a nonzero status) so the cache is not poisoned with false misses
 - unchanged branch/SHA cache rows avoid repeat GitHub calls
 - branches with no PR are cached as misses
 - failed or invalid `gh` responses do not create negative cache rows
@@ -373,7 +370,7 @@ Minimum test coverage before publishing:
 - Expand fishtape tests for doctor output, Slack output, preview rendering, delete/rebase fallback paths, and GitHub auth failure fixtures.
 - Add a soft refresh vs hard refresh split: soft reload keeps PR cache, hard reload clears and refetches PR metadata.
 - Make label badge colors configurable, either globally or by label name.
-- Consider an optional GraphQL or `gh api` PR lookup backend if branch-scoped `gh pr list --head` becomes too slow in very large local branch sets.
+- Consider an optional GraphQL or `gh api` PR lookup backend if the two bulk `gh pr list` calls become limiting in repos with more open or recently-updated PRs than the 200-row cap.
 - Add stale-cache detail to preview output, not just the list badge.
 - Add a README screenshot or short GIF once the UI is stable.
 - Add release/tag guidance for Fisher users once the first public version settles.

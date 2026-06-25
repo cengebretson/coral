@@ -14,7 +14,7 @@ function _coral_slack
 
     set -f sep (printf '\x01')
     set -f printed 0
-    for entry in (cat "$cache_file")
+    for entry in (_coral_read_pr_cache "$cache_file")
         set -f parts (string split \x01 $entry)
         test (count $parts) -ge 8; or continue
 

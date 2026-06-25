@@ -55,8 +55,8 @@ function _coral_preview --argument-names branch
 
     set -f ahead (git rev-list --count "$diff_base..$branch" 2>/dev/null)
     set -f behind (git rev-list --count "$branch..$diff_base" 2>/dev/null)
-    if test -n "$ahead" -a -n "$behind"
-        if test "$ahead" = 0 -a "$behind" = 0
+    if test -n "$ahead"; and test -n "$behind"
+        if test "$ahead" = 0; and test "$behind" = 0
             set_color brblack
             echo "  up to date with $diff_base"
         else

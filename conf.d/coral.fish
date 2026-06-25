@@ -3,7 +3,7 @@ set -g __coral_startup_notice_shown 0
 function _coral_startup_warn_once
     test $__coral_startup_notice_shown -eq 1; and return
 
-    echo $argv >&2
+    echo -- $argv >&2
     set -g __coral_startup_notice_shown 1
 end
 

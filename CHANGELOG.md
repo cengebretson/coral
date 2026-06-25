@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- PR enrichment now fetches status with two bulk `gh pr list` calls (all open
+  PRs, plus the merged/closed history window) instead of one `gh pr list --head`
+  call per branch, so a refresh is a constant number of round-trips regardless
+  of how many local branches you browse, and a single slow lookup can no longer
+  stall a batch. PR status (open kept regardless of age, recent closed/merged,
+  no-PR misses) is unchanged.
+- `git worktree list --porcelain` parsing is now consolidated in a single
+  `_coral_worktree_entries` helper that the linked-only list and the per-branch
+  path lookups build on, instead of three near-identical awk copies.
+- The Slack export and preview ahead/behind check reuse shared helpers and
+  chained `test` conditions; the startup warning escapes its message with `--`.
+  No user-facing behavior change.
+
+### Removed
+
+- `CORAL_PR_BATCH_SIZE` (and the `_coral_pr_batch_size` helper). The bulk PR
+  fetch no longer runs per-branch parallel batches, so the setting had no
+  effect; it is no longer read.
+
 ## [0.3.4] - 2026-06-24
 
 ### Fixed

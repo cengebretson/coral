@@ -103,7 +103,6 @@ Example:
 ```fish
 set -g CORAL_JIRA_URL_TEMPLATE 'https://yourorg.atlassian.net/browse/{key}'
 set -g CORAL_LIST_MODE full
-set -g CORAL_PR_BATCH_SIZE 10
 set -g CORAL_PR_HISTORY_DAYS 30
 ```
 
@@ -114,7 +113,6 @@ set -g CORAL_PR_HISTORY_DAYS 30
 | `CORAL_JIRA_KEY_PATTERN` | `[A-Z]+-[0-9]+` | Regex used to parse Jira issue keys from branch names. |
 | `CORAL_JIRA_URL_TEMPLATE` | unset | Jira URL template. Include `{key}`. |
 | `CORAL_LIST_MODE` | `full` | Branch list density. Use `full` for the rich view or `short` for branch name plus PR status. |
-| `CORAL_PR_BATCH_SIZE` | `10` | Number of branch-scoped PR lookups per cache refresh batch. |
 | `CORAL_PR_HISTORY_DAYS` | `30` | How far back to include merged or closed PRs by update date. Set `0` for open PRs only. |
 | `CORAL_COLOR_ACCENT` | `#CBA6F7` | Accent color for status badges. |
 | `CORAL_COLOR_BG` | `#1E1E2E` | Background-oriented color used by prompts. |

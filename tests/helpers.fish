@@ -19,6 +19,5 @@ function coral_test_reset
     set -e CORAL_JIRA_KEY_PATTERN
     set -e CORAL_JIRA_URL_TEMPLATE
     set -e CORAL_LIST_MODE
-    set -e CORAL_PR_BATCH_SIZE
     set -e CORAL_PR_HISTORY_DAYS
 end

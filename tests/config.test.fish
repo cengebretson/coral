@@ -13,7 +13,6 @@ mkdir -p "$temp_config_home/coral"
 printf '%s\n' \
     "set -g CORAL_JIRA_URL_TEMPLATE 'https://jira.example.com/browse/{key}'" \
     "set -g CORAL_LIST_MODE short" \
-    "set -g CORAL_PR_BATCH_SIZE 7" \
     "set -g CORAL_PR_HISTORY_DAYS 0" \
     > "$temp_config_home/coral/config.fish"
 
@@ -22,7 +21,6 @@ _coral_load_config
 
 @test "config file sets Jira template" (_coral_jira_url FLYWL-634) = "https://jira.example.com/browse/FLYWL-634"
 @test "config file sets list mode" (_coral_list_mode) = short
-@test "config file sets PR batch size" (_coral_pr_batch_size) = 7
 @test "config file sets PR history days" (_coral_pr_history_days) = 0
 @test "config defaults missing cache TTL" (_coral_cache_ttl) = 300
 @test "config defaults Jira key pattern" (_coral_jira_pattern) = "[A-Z]+-[0-9]+"
