@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-06-24
+
 ### Changed
 
 - PR enrichment now fetches status with two bulk `gh pr list` calls (all open
@@ -123,7 +125,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The Jira keybinding is only registered when `CORAL_JIRA_URL_TEMPLATE` is set,
   matching the help header.
 
-[Unreleased]: https://github.com/cengebretson/coral/compare/v0.3.4...HEAD
+[Unreleased]: https://github.com/cengebretson/coral/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/cengebretson/coral/compare/v0.3.4...v0.4.0
 [0.3.4]: https://github.com/cengebretson/coral/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/cengebretson/coral/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/cengebretson/coral/compare/v0.3.1...v0.3.2
