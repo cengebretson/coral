@@ -19,6 +19,7 @@ function _coral_preview --argument-names branch
     set -f pr_title ''
     set -f pr_url ''
     set -f pr_base ''
+    set -f pr_draft ''
     set -f pr_labels
 
     set -f pr_row (_coral_cached_pr_row "$branch")
@@ -27,16 +28,25 @@ function _coral_preview --argument-names branch
         set pr_state $parts[3]
         if test -n "$pr_state"
             set pr_ok true
-            set pr_title $parts[6]
-            set pr_base $parts[7]
-            set pr_url $parts[8]
-            test -n "$parts[5]"; and set pr_labels (string split , -- $parts[5])
+            if test (count $parts) -ge 9
+                set pr_draft $parts[5]
+                set pr_title $parts[7]
+                set pr_base $parts[8]
+                set pr_url $parts[9]
+                test -n "$parts[6]"; and set pr_labels (string split , -- $parts[6])
+            else
+                set pr_title $parts[6]
+                set pr_base $parts[7]
+                set pr_url $parts[8]
+                test -n "$parts[5]"; and set pr_labels (string split , -- $parts[5])
+            end
         end
     else if _coral_is_github_repo; and command -q gh
-        set -f pr (gh pr view "$branch" --json title,state,url,labels,baseRefName 2>/dev/null)
+        set -f pr (gh pr view "$branch" --json title,state,url,labels,baseRefName,isDraft 2>/dev/null)
         if test -n "$pr"; and echo $pr | jq -e . >/dev/null 2>&1
             set pr_ok true
             set pr_state (echo $pr | jq -r '.state // ""' 2>/dev/null)
+            set pr_draft (echo $pr | jq -r 'if .isDraft then "true" else "false" end' 2>/dev/null)
             set pr_title (echo $pr | jq -r '.title // ""' 2>/dev/null)
             set pr_url (echo $pr | jq -r '.url // ""' 2>/dev/null)
             set pr_base (echo $pr | jq -r '.baseRefName // ""' 2>/dev/null)
@@ -72,7 +82,7 @@ function _coral_preview --argument-names branch
     end
 
     if test "$pr_ok" = true
-        set -f pr_display (string split \t (_coral_pr_status_display "$pr_state" ""))
+        set -f pr_display (string split \t (_coral_pr_status_display "$pr_state" "" "$pr_draft"))
         set_color $pr_display[1]
         set -f icon $pr_display[3]
         echo "  $icon $pr_title"

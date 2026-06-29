@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- PR enrichment now scopes GitHub lookups to the local branches Coral is
+  rendering, using a single GraphQL request instead of broad repository-wide PR
+  list calls. This keeps refreshes fast in repositories with many open and
+  recent PRs while preserving open and recent closed/merged status behavior.
+- Draft pull requests now display with a distinct muted hollow-circle marker so
+  they are visually separate from ready open PRs.
+
 ## [0.4.0] - 2026-06-24
 
 ### Changed

@@ -5,6 +5,12 @@ function _coral_pr_entries
 
     set -f sep (printf '\x01')
     set -f since (_coral_since_date (_coral_pr_history_days))
+    set -f origin (git remote get-url origin 2>/dev/null)
+    set -f repo_path (string replace -r '^git@github\.com:' '' -- "$origin" | string replace -r '^https?://github\.com/' '' | string replace -r '\.git$' '')
+    set -f repo_parts (string split / -- "$repo_path")
+    test (count $repo_parts) -ge 2; or return 1
+    set -f owner $repo_parts[1]
+    set -f repo $repo_parts[2]
 
     # Unpack the requested branch/sha pairs — the set to produce rows for. The sha
     # is the branch's current local commit, stored so _coral_list can tell a fresh
@@ -18,39 +24,34 @@ function _coral_pr_entries
         set -e argv[1]
     end
 
-    set -f fields headRefName,state,reviewDecision,labels,title,baseRefName,updatedAt,url
+    set -f query_fields
+    for idx in (seq (count $want_branches))
+        set -f branch_json (printf '%s' "$want_branches[$idx]" | jq -Rs .)
+        set query_fields $query_fields "b$idx: pullRequests(headRefName: $branch_json, first: 5, states: [OPEN, MERGED, CLOSED], orderBy: {field: UPDATED_AT, direction: DESC}) { nodes { headRefName state reviewDecision isDraft title baseRefName updatedAt url labels(first: 20) { nodes { name } } } }"
+    end
 
-    # Two bulk queries, regardless of how many branches were requested:
-    #   1. every open PR — always shown, no age filter
-    #   2. all states updated within the history window — recent closed/merged
-    # (--state all is honored alongside --search, so query 2 also re-includes
-    # recently-touched open PRs; the dedup below collapses the overlap.)
-    set -f open_json (gh pr list --state open --limit 200 --json $fields 2>/dev/null)
-    set -f recent_json '[]'
-    test -n "$since"; and set recent_json (gh pr list --state all \
-        --search "updated:>=$since sort:updated-desc" --limit 200 --json $fields 2>/dev/null)
+    set -f query "query(\$owner: String!, \$repo: String!) { repository(owner: \$owner, name: \$repo) { "(string join ' ' $query_fields)" } }"
+    set -f pr_json (gh api graphql -f owner="$owner" -f repo="$repo" -f query="$query" 2>/dev/null)
+    echo "$pr_json" | jq -e '.data.repository | type == "object"' >/dev/null 2>&1; or return 1
 
-    # Validity gate: a valid array (even []) is a real answer; a non-array means gh
-    # errored. If BOTH calls failed, return nothing so _coral_list warns and skips
-    # caching — never poison the cache with "no PR" misses during a gh/auth outage.
-    set -f open_ok 1
-    set -f recent_ok 1
-    echo "$open_json" | jq -e 'type == "array"' >/dev/null 2>&1; or set open_ok 0
-    echo "$recent_json" | jq -e 'type == "array"' >/dev/null 2>&1; or set recent_ok 0
-    test "$open_ok" = 0; and test "$recent_ok" = 0; and return 1
-    test "$open_ok" = 0; and set open_json '[]'
-    test "$recent_ok" = 0; and set recent_json '[]'
-
-    # Merge both sets, prefer OPEN > MERGED > CLOSED, one row per head branch. jq's
-    # sort is stable, so unique_by keeps the highest-priority row per branch. Emits
-    # "head SEP state SEP review SEP labels SEP title SEP base SEP url" per line.
-    set -f pr_rows (jq -rn --arg sep "$sep" \
-        --argjson open "$open_json" --argjson recent "$recent_json" '
-        ($open + $recent)
-        | sort_by(if .state == "OPEN" then 0 elif .state == "MERGED" then 1 else 2 end)
-        | unique_by(.headRefName)[]
-        | [.headRefName, .state, (.reviewDecision // ""),
-           ([.labels[].name] | join(",")), .title, (.baseRefName // ""), (.url // "")]
+    # For each requested local branch, use only PRs for that branch. Open PRs are
+    # always eligible; merged/closed PRs are eligible only inside the history window.
+    # Prefer OPEN > MERGED > CLOSED, then newest updatedAt.
+    set -f pr_rows (printf '%s\n' "$pr_json" | jq -r --arg sep "$sep" --arg since "$since" '
+        [
+          .data.repository
+          | to_entries[]
+          | .value.nodes[]
+          | select(.state == "OPEN" or ($since != "" and (.updatedAt[0:10] >= $since)))
+        ]
+        | group_by(.headRefName)[]
+        | sort_by(
+            if .state == "OPEN" then 0 elif .state == "MERGED" then 1 else 2 end,
+            -((.updatedAt // "1970-01-01T00:00:00Z") | fromdateiso8601)
+          )
+        | .[0]
+        | [.headRefName, .state, (.reviewDecision // ""), (if .isDraft then "true" else "false" end),
+           ([.labels.nodes[].name] | join(",")), .title, (.baseRefName // ""), (.url // "")]
         | join($sep)')
 
     # Index rows by head branch for O(1) lookup.
@@ -69,7 +70,7 @@ function _coral_pr_entries
             set -f rest (string split -m1 "$sep" -- $pr_rows[$j])[2]
             printf '%s\n' (string join "$sep" "$branch" "$sha" "$rest")
         else
-            printf '%s\n' (string join "$sep" "$branch" "$sha" '' '' '' '' '' '')
+            printf '%s\n' (string join "$sep" "$branch" "$sha" '' '' '' '' '' '' '')
         end
     end
 end

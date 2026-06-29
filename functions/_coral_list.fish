@@ -66,7 +66,7 @@ function _coral_list --argument-names list_mode no_fetch
     end
 
     # Validate cached entries have the branch-aware format:
-    # branch, local sha, state, review, labels, title, base, url.
+    # branch, local sha, state, review, [draft], labels, title, base, url.
     if test -n "$pr_entries"
         set -f valid_entries
         for entry in $pr_entries
@@ -144,6 +144,7 @@ function _coral_list --argument-names list_mode no_fetch
         set -f pr_line ''
         set -f pr_state ''
         set -f pr_review ''
+        set -f pr_draft ''
         set -f pr_labels ''
         if set -f pr_idx (contains --index -- $branch $pr_keys)
             set -f pr_line $pr_vals[$pr_idx]
@@ -159,11 +160,16 @@ function _coral_list --argument-names list_mode no_fetch
             set -f pr_parts (string split \x01 $pr_line)
             set -f pr_state $pr_parts[3]
             set -f pr_review $pr_parts[4]
-            set -f pr_labels $pr_parts[5]
+            if test (count $pr_parts) -ge 9
+                set -f pr_draft $pr_parts[5]
+                set -f pr_labels $pr_parts[6]
+            else
+                set -f pr_labels $pr_parts[5]
+            end
         end
 
         if test -n "$pr_state"
-            set -f pr_display (string split \t (_coral_pr_status_display "$pr_state" "$pr_review"))
+            set -f pr_display (string split \t (_coral_pr_status_display "$pr_state" "$pr_review" "$pr_draft"))
             set -f dot_color $pr_display[2]
             set -f dot $pr_display[3]
         end

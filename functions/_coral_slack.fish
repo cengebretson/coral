@@ -20,9 +20,15 @@ function _coral_slack
 
         set -f branch $parts[1]
         set -f state $parts[3]
-        set -f labels $parts[5]
-        set -f title $parts[6]
-        set -f url $parts[8]
+        if test (count $parts) -ge 9
+            set -f labels $parts[6]
+            set -f title $parts[7]
+            set -f url $parts[9]
+        else
+            set -f labels $parts[5]
+            set -f title $parts[6]
+            set -f url $parts[8]
+        end
 
         test "$state" = OPEN; or continue
         test -n "$url"; or continue

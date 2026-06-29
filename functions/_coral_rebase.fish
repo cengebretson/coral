@@ -5,7 +5,12 @@ function _coral_rebase --argument-names branch
     set -f pr_base
     set -f row (_coral_cached_pr_row "$branch")
     if test -n "$row"
-        set pr_base (string split \x01 -- $row)[7]
+        set -f parts (string split \x01 -- $row)
+        if test (count $parts) -ge 9
+            set pr_base $parts[8]
+        else
+            set pr_base $parts[7]
+        end
     else if _coral_is_github_repo; and command -q gh
         set pr_base (gh pr view "$branch" --json baseRefName --jq '.baseRefName' 2>/dev/null)
     end
