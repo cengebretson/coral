@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-06-29
+
 ### Changed
 
 - PR enrichment now scopes GitHub lookups to the local branches Coral is
@@ -134,7 +136,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The Jira keybinding is only registered when `CORAL_JIRA_URL_TEMPLATE` is set,
   matching the help header.
 
-[Unreleased]: https://github.com/cengebretson/coral/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/cengebretson/coral/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/cengebretson/coral/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/cengebretson/coral/compare/v0.3.4...v0.4.0
 [0.3.4]: https://github.com/cengebretson/coral/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/cengebretson/coral/compare/v0.3.2...v0.3.3
